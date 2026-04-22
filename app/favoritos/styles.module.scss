@@ -1,0 +1,77 @@
+//app/favoritos/styles.module.scss
+
+.container {
+  min-height: 100vh;
+  padding: 32px 20px;
+  background: var(--page-background);
+  color: var(--text-primary);
+}
+
+.inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  color: var(--accent-text);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.title {
+  font-size: clamp(32px, 4vw, 42px);
+  margin-bottom: 8px;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 28px;
+}
+
+.section {
+  margin-bottom: 36px;
+}
+
+.sectionTitle {
+  font-size: 28px;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.empty {
+  color: var(--text-secondary);
+}
+
+.grid {
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--surface-border);
+  border-radius: 18px;
+  padding: 18px;
+  background: var(--surface-1);
+  box-shadow: var(--shadow-elevated);
+}
+
+.cardHeader {
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: var(--accent-text);
+}
+
+.cardText {
+  line-height: 1.7;
+  color: var(--text-primary);
+}
