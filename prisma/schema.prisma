@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/* =========================
+   BÍBLIA
+========================= */
+
+model Book {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String   @unique
+  testament String
+  order     Int
+
+  chapters  Chapter[]
+}
+
+model Chapter {
+  id     Int @id @default(autoincrement())
+  number Int
+
+  bookId Int
+  book   Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  verses Verse[]
+
+  @@unique([bookId, number])
+}
+
+/* ===== TRADUÇÕES ===== */
+
+model Translation {
+  id   Int    @id @default(autoincrement())
+  code String @unique // "acf", "ara", "nvi", "kja"
+  name String
+
+  verses Verse[]
+}
+
+model Verse {
+  id            Int    @id @default(autoincrement())
+  number        Int
+  text          String
+
+  chapterId     Int
+  chapter       Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  translationId Int
+  translation   Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
+
+  favorite      FavoriteVerse?
+  note          VerseNote?
+
+  @@unique([chapterId, number, translationId])
+}
+
+/* =========================
+   HARPA CRISTÃ
+========================= */
+
+model Hymn {
+  id       Int         @id @default(autoincrement())
+  number   Int         @unique
+  title    String
+  chorus   String?
+  verses   HymnVerse[]
+  favorite FavoriteHymn?
+}
+
+enum HymnVerseType {
+  VERSE
+  CHORUS
+}
+
+model HymnVerse {
+  id       Int @id @default(autoincrement())
+  hymnId   Int
+  number   Int
+  text     String
+
+  type     HymnVerseType @default(VERSE)
+  position Int           @default(0)
+
+  hymn     Hymn @relation(fields: [hymnId], references: [id], onDelete: Cascade)
+
+  @@unique([hymnId, number])
+  @@index([hymnId, position])
+}
+
+/* =========================
+   FAVORITOS
+========================= */
+
+model FavoriteVerse {
+  id        Int      @id @default(autoincrement())
+  verseId   Int      @unique
+  verse     Verse    @relation(fields: [verseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model FavoriteHymn {
+  id        Int      @id @default(autoincrement())
+  hymnId    Int      @unique
+  hymn      Hymn     @relation(fields: [hymnId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+/* =========================
+   ANOTAÇÕES
+========================= */
+
+model VerseNote {
+  id        Int      @id @default(autoincrement())
+  verseId   Int      @unique
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  verse     Verse    @relation(fields: [verseId], references: [id], onDelete: Cascade)
+}

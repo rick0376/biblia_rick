@@ -1,0 +1,135 @@
+//app/harpa/[numero]/styles.module.scss
+
+.container {
+  min-height: 100vh;
+  padding: 20px;
+  margin: 0 auto;
+  background: var(--page-background);
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.backBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  color: var(--accent-text);
+  background: var(--surface-1);
+  border: 1px solid var(--accent-soft-border-2);
+  box-shadow: var(--shadow-elevated);
+}
+
+.title {
+  font-size: clamp(24px, 3vw, 40px);
+  font-weight: 950;
+  letter-spacing: -0.03em;
+  margin: 0;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 6px 0 0;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  border-radius: 18px;
+  padding: 14px;
+  background: var(--surface-1);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--shadow-elevated);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--accent-text-soft);
+  background: var(--accent-soft-bg);
+  border: 1px solid var(--accent-soft-border);
+  margin-bottom: 10px;
+}
+
+.text {
+  margin: 0;
+  white-space: pre-wrap;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.search {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--field-border);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  outline: none;
+  margin: 10px 0 16px;
+}
+
+.search::placeholder {
+  color: var(--text-muted);
+}
+
+.empty {
+  margin-top: 14px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.chorusBox {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--chorus-bg);
+  border: 1px solid var(--chorus-border);
+  border-left: 4px solid rgba(245, 158, 11, 0.55);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.04) inset;
+}
+
+.chorusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--accent-text-soft);
+  background: var(--accent-soft-bg);
+  border: 1px solid var(--chorus-border);
+  margin-bottom: 8px;
+}
+
+.chorusText {
+  margin: 0;
+  white-space: pre-wrap;
+  padding-left: 8px;
+  font-style: italic;
+  font-weight: 650;
+  line-height: 1.7;
+  color: var(--chorus-text);
+}
