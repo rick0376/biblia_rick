@@ -250,3 +250,16 @@
   border-left: 0;
   border-top: 0;
 }
+
+.whatsIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #25d366;
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+.whatsIcon:hover {
+  filter: brightness(1.08);
+}
