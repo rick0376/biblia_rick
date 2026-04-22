@@ -123,7 +123,7 @@ export default async function Home({
           </div>
 
           <div className={styles.footerHint}>
-            Produzido por: Rick Pereira - whats (12) 99189-0682.
+            Desenvolvido por Rick Pereira • WhatsApp: (12) 99189-0682
           </div>
         </div>
       </section>

@@ -1,34 +1,22 @@
-//rode: npx tsx scripts/copy-biblia.ts
+//rode: npx tsx scripts/copy-harpa.ts
 
 import "dotenv/config";
 import { Client } from "pg";
 
-type TranslationRow = {
-  id: number;
-  code: string;
-  name: string;
-};
-
-type BookRow = {
-  id: number;
-  name: string;
-  slug: string;
-  testament: string;
-  order: number;
-};
-
-type ChapterRow = {
+type HymnRow = {
   id: number;
   number: number;
-  bookId: number;
+  title: string;
+  chorus: string | null;
 };
 
-type VerseRow = {
+type HymnVerseRow = {
   id: number;
+  hymnId: number;
   number: number;
   text: string;
-  chapterId: number;
-  translationId: number;
+  type: "VERSE" | "CHORUS";
+  position: number;
 };
 
 const OLD_DATABASE_URL = process.env.OLD_DATABASE_URL;
@@ -101,81 +89,52 @@ async function main() {
   await newDb.connect();
 
   try {
-    console.log("📥 Lendo dados do banco antigo...");
+    console.log("📥 Lendo dados da Harpa do banco antigo...");
 
-    const translations = (
-      await oldDb.query<TranslationRow>(
-        `SELECT "id", "code", "name" FROM "Translation" ORDER BY "id" ASC`,
+    const hymns = (
+      await oldDb.query<HymnRow>(
+        `SELECT "id", "number", "title", "chorus" FROM "Hymn" ORDER BY "id" ASC`,
       )
     ).rows;
 
-    const books = (
-      await oldDb.query<BookRow>(
-        `SELECT "id", "name", "slug", "testament", "order" FROM "Book" ORDER BY "id" ASC`,
+    const hymnVerses = (
+      await oldDb.query<HymnVerseRow>(
+        `SELECT "id", "hymnId", "number", "text", "type", "position" FROM "HymnVerse" ORDER BY "id" ASC`,
       )
     ).rows;
 
-    const chapters = (
-      await oldDb.query<ChapterRow>(
-        `SELECT "id", "number", "bookId" FROM "Chapter" ORDER BY "id" ASC`,
-      )
-    ).rows;
-
-    const verses = (
-      await oldDb.query<VerseRow>(
-        `SELECT "id", "number", "text", "chapterId", "translationId" FROM "Verse" ORDER BY "id" ASC`,
-      )
-    ).rows;
-
-    console.log("📦 Limpando tabelas do banco novo...");
+    console.log("📦 Limpando tabelas da Harpa no banco novo...");
 
     await newDb.query(`
-      TRUNCATE TABLE "Verse", "Chapter", "Book", "Translation"
+      TRUNCATE TABLE "HymnVerse", "Hymn"
       RESTART IDENTITY CASCADE;
     `);
 
-    console.log("📤 Copiando dados para o banco novo...");
+    console.log("📤 Copiando Harpa para o banco novo...");
 
     await insertMany(
       newDb,
-      "Translation",
-      ["id", "code", "name"],
-      translations,
+      "Hymn",
+      ["id", "number", "title", "chorus"],
+      hymns,
       200,
     );
+
     await insertMany(
       newDb,
-      "Book",
-      ["id", "name", "slug", "testament", "order"],
-      books,
-      200,
-    );
-    await insertMany(
-      newDb,
-      "Chapter",
-      ["id", "number", "bookId"],
-      chapters,
-      500,
-    );
-    await insertMany(
-      newDb,
-      "Verse",
-      ["id", "number", "text", "chapterId", "translationId"],
-      verses,
+      "HymnVerse",
+      ["id", "hymnId", "number", "text", "type", "position"],
+      hymnVerses,
       1000,
     );
 
     console.log("🔧 Ajustando sequences...");
-    await resetSequence(newDb, "Translation");
-    await resetSequence(newDb, "Book");
-    await resetSequence(newDb, "Chapter");
-    await resetSequence(newDb, "Verse");
+    await resetSequence(newDb, "Hymn");
+    await resetSequence(newDb, "HymnVerse");
 
-    console.log("✅ Cópia concluída com sucesso!");
-    console.log(`Translations: ${translations.length}`);
-    console.log(`Books: ${books.length}`);
-    console.log(`Chapters: ${chapters.length}`);
-    console.log(`Verses: ${verses.length}`);
+    console.log("✅ Cópia da Harpa concluída com sucesso!");
+    console.log(`Hymns: ${hymns.length}`);
+    console.log(`HymnVerses: ${hymnVerses.length}`);
   } finally {
     await oldDb.end();
     await newDb.end();
@@ -183,6 +142,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("💥 Erro na cópia:", error);
+  console.error("💥 Erro na cópia da Harpa:", error);
   process.exit(1);
 });
