@@ -9,11 +9,9 @@ function normalizarTexto(valor: string) {
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .replace(/\s+/g, " ")
     .trim();
-}
-
-function escaparRegex(valor: string) {
-  return valor.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function textoCombinaComBusca(texto: string, termo: string) {
@@ -24,16 +22,7 @@ function textoCombinaComBusca(texto: string, termo: string) {
     return false;
   }
 
-  if (termoNormalizado.includes(" ")) {
-    return textoNormalizado.includes(termoNormalizado);
-  }
-
-  const regex = new RegExp(
-    `(^|[^\\p{L}\\p{N}])${escaparRegex(termoNormalizado)}($|[^\\p{L}\\p{N}])`,
-    "u",
-  );
-
-  return regex.test(textoNormalizado);
+  return textoNormalizado.includes(termoNormalizado);
 }
 
 function montarTituloParte(tipo: string, numero: number) {
