@@ -1,3 +1,5 @@
+//app/components/PergunteBiblia.tsx
+
 "use client";
 
 import Link from "next/link";
@@ -23,16 +25,22 @@ type ApiResult = {
   error?: string;
 };
 
-export default function PergunteBiblia({ version }: { version: Version }) {
+export default function PergunteBiblia({
+  version,
+}: {
+  version: Version;
+}) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
   const [references, setReferences] = useState<Reference[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent) {
     event.preventDefault();
+
     const trimmed = question.trim();
+
     if (trimmed.length < 3 || loading) return;
 
     setLoading(true);
@@ -43,8 +51,13 @@ export default function PergunteBiblia({ version }: { version: Version }) {
     try {
       const response = await fetch("/api/biblia/ia", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: trimmed, version }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question: trimmed,
+          version,
+        }),
       });
 
       const data = (await response.json()) as ApiResult;
@@ -63,20 +76,34 @@ export default function PergunteBiblia({ version }: { version: Version }) {
     }
   }
 
+  const suggestions = [
+    "Ansiedade",
+    "Fé",
+    "Amor",
+    "Perdão",
+    "Salvação",
+    "Esperança",
+  ];
+
   return (
-    <section className={styles.wrapper} aria-labelledby="pergunte-biblia-title">
-      <div className={styles.header}>
-        <div>
-          <div className={styles.eyebrow}>✨ Pesquisa inteligente</div>
-          <h2 id="pergunte-biblia-title" className={styles.title}>
-            Pergunte à Bíblia
-          </h2>
-          <p className={styles.description}>
-            Faça uma pergunta e encontre uma resposta acompanhada dos versículos
-            relacionados na versão {version.toUpperCase()}.
+    <section className={styles.container}>
+      <div className={styles.aiHeader}>
+        <div className={styles.aiIcon}>✦</div>
+
+        <div className={styles.aiTitle}>
+          <span className={styles.badge}>Pesquisa inteligente</span>
+
+          <h2>Pergunte à Bíblia</h2>
+
+          <p>
+            Faça uma pergunta e encontre uma resposta acompanhada dos
+            versículos relacionados na versão {version.toUpperCase()}.
           </p>
         </div>
-        <div className={styles.version}>📖 {version.toUpperCase()}</div>
+
+        <div className={styles.versionBadge}>
+          📖 {version.toUpperCase()}
+        </div>
       </div>
 
       <form onSubmit={submit} className={styles.form}>
@@ -92,7 +119,10 @@ export default function PergunteBiblia({ version }: { version: Version }) {
         />
 
         <div className={styles.formFooter}>
-          <span className={styles.hint}>{question.length}/500</span>
+          <span className={styles.hint}>
+            {question.length}/500
+          </span>
+
           <button
             type="submit"
             className={styles.button}
@@ -103,12 +133,19 @@ export default function PergunteBiblia({ version }: { version: Version }) {
         </div>
       </form>
 
-      <div className={styles.suggestions} aria-label="Sugestões de pesquisa">
-        {["Ansiedade", "Fé", "Amor", "Perdão", "Salvação", "Esperança"].map((item) => (
+      <div
+        className={styles.suggestions}
+        aria-label="Sugestões de pesquisa"
+      >
+        {suggestions.map((item) => (
           <button
             key={item}
             type="button"
-            onClick={() => setQuestion(`O que a Bíblia ensina sobre ${item.toLowerCase()}?`)}
+            onClick={() =>
+              setQuestion(
+                `O que a Bíblia ensina sobre ${item.toLowerCase()}?`,
+              )
+            }
             disabled={loading}
           >
             {item}
@@ -116,16 +153,25 @@ export default function PergunteBiblia({ version }: { version: Version }) {
         ))}
       </div>
 
-      {error && <div className={styles.error}>⚠️ {error}</div>}
+      {error && (
+        <div className={styles.error}>
+          ⚠️ {error}
+        </div>
+      )}
 
       {answer && (
         <div className={styles.result}>
           <div className={styles.answerHeader}>
             <span>📜 Resposta</span>
-            <span className={styles.answerVersion}>{version.toUpperCase()}</span>
+
+            <span className={styles.answerVersion}>
+              {version.toUpperCase()}
+            </span>
           </div>
 
-          <div className={styles.answer}>{answer}</div>
+          <div className={styles.answer}>
+            {answer}
+          </div>
 
           {references.length > 0 && (
             <div className={styles.references}>
@@ -133,9 +179,15 @@ export default function PergunteBiblia({ version }: { version: Version }) {
 
               <div className={styles.referenceList}>
                 {references.map((reference) => (
-                  <article key={reference.id} className={styles.reference}>
+                  <article
+                    key={reference.id}
+                    className={styles.reference}
+                  >
                     <div className={styles.referenceTop}>
-                      <strong>{reference.reference}</strong>
+                      <strong>
+                        {reference.reference}
+                      </strong>
+
                       <Link
                         href={`/livros/${reference.slug}/${reference.chapter}?v=${version}#v-${reference.number}`}
                         className={styles.readLink}
@@ -143,6 +195,7 @@ export default function PergunteBiblia({ version }: { version: Version }) {
                         Ler no contexto →
                       </Link>
                     </div>
+
                     <p>{reference.text}</p>
                   </article>
                 ))}

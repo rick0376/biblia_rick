@@ -1,4 +1,4 @@
-//app/livros/page.tsx
+// app/livros/page.tsx
 
 import Link from "next/link";
 import { prisma } from "../../lib/prisma";
@@ -10,7 +10,16 @@ type Version = "acf" | "ara" | "nvi" | "kja";
 
 function normalizeVersion(v?: string): Version {
   const s = (v ?? "").toLowerCase();
-  if (s === "acf" || s === "ara" || s === "nvi" || s === "kja") return s;
+
+  if (
+    s === "acf" ||
+    s === "ara" ||
+    s === "nvi" ||
+    s === "kja"
+  ) {
+    return s;
+  }
+
   return "acf";
 }
 
@@ -20,6 +29,7 @@ export default async function Livros({
   searchParams?: Promise<{ v?: string }>;
 }) {
   const auth = await requireBibleAuth();
+
   const { v } = (await searchParams) ?? {};
   const version = normalizeVersion(v);
 
@@ -31,17 +41,28 @@ export default async function Livros({
   if (!translation) {
     return (
       <main className={styles.container}>
-        <div className={styles.header}>
-          <div className={styles.headerRow}>
-            <Link href="/" className={styles.backLink} aria-label="Voltar">
-              <span className={styles.backIcon}>←</span>
-            </Link>
+        <div className={styles.topArea}>
+          <Link href="/" className={styles.backLink}>
+            <span className={styles.backIcon}>←</span>
+            <span className={styles.backText}>Voltar</span>
+          </Link>
+
+          <div className={styles.pageHeading}>
+            <div className={styles.headingIcon}>📖</div>
 
             <div>
-              <h1 className={styles.title}>Livros da Bíblia</h1>
+              <span className={styles.eyebrow}>
+                Biblioteca Bíblica
+              </span>
+
+              <h1 className={styles.title}>
+                Livros da Bíblia
+              </h1>
+
               <p className={styles.subtitle}>
-                Tradução <b>{version.toUpperCase()}</b> ainda não foi importada
-                no banco.
+                Tradução{" "}
+                <strong>{version.toUpperCase()}</strong>{" "}
+                ainda não foi importada no banco.
               </p>
             </div>
           </div>
@@ -56,29 +77,47 @@ export default async function Livros({
       name: true,
       slug: true,
       testament: true,
+
       _count: {
         select: {
           chapters: {
             where: {
-              verses: { some: { translationId: translation.id } },
+              verses: {
+                some: {
+                  translationId: translation.id,
+                },
+              },
             },
           },
         },
       },
+
       chapters: {
         where: {
           verses: {
             some: {
               translationId: translation.id,
-              notes: { some: { userId: auth.user.id } },
+
+              notes: {
+                some: {
+                  userId: auth.user.id,
+                },
+              },
             },
           },
         },
-        select: { id: true },
+
+        select: {
+          id: true,
+        },
+
         take: 1,
       },
     },
-    orderBy: { order: "asc" },
+
+    orderBy: {
+      order: "asc",
+    },
   });
 
   const livrosFormatados = livros.map((l) => ({
@@ -92,22 +131,43 @@ export default async function Livros({
 
   return (
     <main className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.headerRow}>
-          <Link href="/" className={styles.backLink} aria-label="Voltar">
-            <span className={styles.backIcon}>←</span>
-          </Link>
+      <div className={styles.topArea}>
+        <Link href="/" className={styles.backLink}>
+          <span className={styles.backIcon}>←</span>
+          <span className={styles.backText}>Voltar</span>
+        </Link>
+
+        <div className={styles.pageHeading}>
+          <div className={styles.headingIcon}>
+            📖
+          </div>
 
           <div>
-            <h1 className={styles.title}>Livros da Bíblia</h1>
+            <span className={styles.eyebrow}>
+              Biblioteca Bíblica
+            </span>
+
+            <h1 className={styles.title}>
+              Livros da Bíblia
+            </h1>
+
             <p className={styles.subtitle}>
-              Selecione um livro • <b>{version.toUpperCase()}</b>
+              Escolha um livro para iniciar sua leitura
+              • versão{" "}
+              <strong>{version.toUpperCase()}</strong>
             </p>
+          </div>
+
+          <div className={styles.versionBadge}>
+            📖 {version.toUpperCase()}
           </div>
         </div>
       </div>
 
-      <LivrosClient livros={livrosFormatados} version={version} />
+      <LivrosClient
+        livros={livrosFormatados}
+        version={version}
+      />
     </main>
   );
 }

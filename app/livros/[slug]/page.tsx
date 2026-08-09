@@ -9,7 +9,10 @@ import { requireBibleAuth } from "../../../lib/auth/server";
 type Version = "acf" | "ara" | "nvi" | "kja";
 
 function normalizeVersion(v?: string): Version {
-  if (v === "acf" || v === "ara" || v === "nvi" || v === "kja") return v;
+  if (v === "acf" || v === "ara" || v === "nvi" || v === "kja") {
+    return v;
+  }
+
   return "acf";
 }
 
@@ -21,8 +24,10 @@ export default async function LivroPage({
   searchParams?: Promise<{ v?: string }>;
 }) {
   const auth = await requireBibleAuth();
+
   const { slug } = await params;
   const { v } = (await searchParams) ?? {};
+
   const version = normalizeVersion(v);
 
   const translation = await prisma.translation.findUnique({
@@ -30,42 +35,69 @@ export default async function LivroPage({
     select: { id: true },
   });
 
-  if (!translation) return <h1>Tradução não encontrada</h1>;
+  if (!translation) {
+    return <div>Tradução não encontrada</div>;
+  }
 
   const livro = await prisma.book.findUnique({
     where: { slug },
+
     select: {
       name: true,
       slug: true,
+
       chapters: {
         where: {
-          verses: { some: { translationId: translation.id } },
+          verses: {
+            some: {
+              translationId: translation.id,
+            },
+          },
         },
+
         select: {
           id: true,
           number: true,
+
           _count: {
             select: {
               verses: {
-                where: { translationId: translation.id },
+                where: {
+                  translationId: translation.id,
+                },
               },
             },
           },
+
           verses: {
             where: {
               translationId: translation.id,
-              notes: { some: { userId: auth.user.id } },
+
+              notes: {
+                some: {
+                  userId: auth.user.id,
+                },
+              },
             },
-            select: { id: true },
+
+            select: {
+              id: true,
+            },
+
             take: 1,
           },
         },
-        orderBy: { number: "asc" },
+
+        orderBy: {
+          number: "asc",
+        },
       },
     },
   });
 
-  if (!livro) return <h1>Livro não encontrado</h1>;
+  if (!livro) {
+    return <div>Livro não encontrado</div>;
+  }
 
   const chapters = livro.chapters.map((c) => ({
     id: c.id,
@@ -76,24 +108,37 @@ export default async function LivroPage({
 
   return (
     <main className={styles.container}>
-      <Link
-        href={`/livros?v=${version}`}
-        className={styles.backLink}
-        aria-label="Voltar para livros"
-      >
-        <span className={styles.backIcon}>←</span>
-        <span className={styles.backText}>Voltar</span>
-      </Link>
+      <div className={styles.topArea}>
+        <Link
+          href={`/livros?v=${version}`}
+          className={styles.backLink}
+          aria-label="Voltar para livros"
+        >
+          <span className={styles.backIcon}>←</span>
+          <span className={styles.backText}>Voltar</span>
+        </Link>
 
-      <div className={styles.headerRow}>
-        <div>
-          <h1 className={styles.title}>{livro.name}</h1>
-          <p className={styles.subtitle}>Escolha um capítulo</p>
+        <div className={styles.pageHeading}>
+          <div className={styles.headingIcon}>📖</div>
+
+          <div className={styles.headingContent}>
+            <span className={styles.eyebrow}>
+              Livro da Bíblia
+            </span>
+
+            <h1 className={styles.title}>
+              {livro.name}
+            </h1>
+
+            <p className={styles.subtitle}>
+              Escolha um capítulo para continuar a leitura.
+            </p>
+          </div>
+
+          <span className={styles.badge}>
+            {chapters.length} capítulos • {version.toUpperCase()}
+          </span>
         </div>
-
-        <span className={styles.badge}>
-          {chapters.length} capítulos • {version.toUpperCase()}
-        </span>
       </div>
 
       <CapitulosClient

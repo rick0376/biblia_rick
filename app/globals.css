@@ -5,21 +5,15 @@
   --foreground: #f3f4f6;
 
   --page-background:
-    radial-gradient(
-      900px 520px at 15% 10%,
+    radial-gradient(900px 520px at 15% 10%,
       rgba(245, 158, 11, 0.14),
-      transparent 60%
-    ),
-    radial-gradient(
-      820px 460px at 80% 20%,
+      transparent 60%),
+    radial-gradient(820px 460px at 80% 20%,
       rgba(168, 85, 247, 0.1),
-      transparent 60%
-    ),
-    radial-gradient(
-      900px 550px at 50% 95%,
+      transparent 60%),
+    radial-gradient(900px 550px at 50% 95%,
       rgba(34, 197, 94, 0.08),
-      transparent 60%
-    ),
+      transparent 60%),
     linear-gradient(180deg, #101827 0%, #0b1020 100%);
 
   --surface-1: rgba(255, 255, 255, 0.06);
@@ -44,6 +38,8 @@
   --accent-gradient: linear-gradient(90deg, #fde68a, #f59e0b, #fde68a);
   --accent-gradient-2: linear-gradient(135deg, #f6e27a, #f0b90b);
   --accent-strong-text: #1b1302;
+  --title-strong: #f6c65b;
+  --card-title-strong: #f2cf78;
 
   --field-bg: rgba(255, 255, 255, 0.05);
   --field-border: rgba(245, 158, 11, 0.22);
@@ -64,21 +60,15 @@ html[data-theme="light"] {
   --card-strong-text: #5c3a00;
 
   --page-background:
-    radial-gradient(
-      900px 520px at 15% 10%,
+    radial-gradient(900px 520px at 15% 10%,
       rgba(245, 158, 11, 0.12),
-      transparent 60%
-    ),
-    radial-gradient(
-      820px 460px at 80% 20%,
+      transparent 60%),
+    radial-gradient(820px 460px at 80% 20%,
       rgba(168, 85, 247, 0.08),
-      transparent 60%
-    ),
-    radial-gradient(
-      900px 550px at 50% 95%,
+      transparent 60%),
+    radial-gradient(900px 550px at 50% 95%,
       rgba(34, 197, 94, 0.06),
-      transparent 60%
-    ),
+      transparent 60%),
     linear-gradient(180deg, #f8f1e4 0%, #efe4d0 100%);
 
   --surface-1: rgba(255, 255, 255, 0.74);
@@ -103,6 +93,8 @@ html[data-theme="light"] {
   --accent-gradient: linear-gradient(90deg, #c98900, #9a5f00, #c98900);
   --accent-gradient-2: linear-gradient(135deg, #d59a10, #9a5f00);
   --accent-strong-text: #fff8ea;
+  --title-strong: #a85f00;
+  --card-title-strong: #8a5200;
 
   --field-bg: rgba(255, 255, 255, 0.78);
   --field-border: rgba(201, 145, 34, 0.28);
