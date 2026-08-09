@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "../../../lib/prisma";
 import CapitulosClient from "../../components/CapitulosClient";
 import styles from "./styles.module.scss";
+import { requireBibleAuth } from "../../../lib/auth/server";
 
 type Version = "acf" | "ara" | "nvi" | "kja";
 
@@ -19,6 +20,7 @@ export default async function LivroPage({
   params: Promise<{ slug: string }>;
   searchParams?: Promise<{ v?: string }>;
 }) {
+  const auth = await requireBibleAuth();
   const { slug } = await params;
   const { v } = (await searchParams) ?? {};
   const version = normalizeVersion(v);
@@ -52,7 +54,7 @@ export default async function LivroPage({
           verses: {
             where: {
               translationId: translation.id,
-              note: { isNot: null },
+              notes: { some: { userId: auth.user.id } },
             },
             select: { id: true },
             take: 1,

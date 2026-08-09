@@ -3,13 +3,17 @@
 import Link from "next/link";
 import { prisma } from "../../lib/prisma";
 import styles from "./styles.module.scss";
+import { requireBibleAuth } from "../../lib/auth/server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function FavoritosPage() {
+  const auth = await requireBibleAuth();
+
   const [versiculos, hinos] = await Promise.all([
     prisma.favoriteVerse.findMany({
+      where: { userId: auth.user.id },
       orderBy: { createdAt: "desc" },
       include: {
         verse: {
@@ -25,6 +29,7 @@ export default async function FavoritosPage() {
       },
     }),
     prisma.favoriteHymn.findMany({
+      where: { userId: auth.user.id },
       orderBy: { createdAt: "desc" },
       include: {
         hymn: true,

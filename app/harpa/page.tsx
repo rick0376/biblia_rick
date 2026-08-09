@@ -7,8 +7,11 @@ import Link from "next/link";
 import { prisma } from "../../lib/prisma";
 import styles from "./styles.module.scss";
 import HarpaClient from "../components/HarpaClient";
+import { requireBibleAuth } from "../../lib/auth/server";
 
 export default async function HarpaPage() {
+  await requireBibleAuth();
+
   const hinos = await prisma.hymn.findMany({
     select: { number: true, title: true, _count: { select: { verses: true } } },
     orderBy: { number: "asc" },

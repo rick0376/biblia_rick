@@ -4,12 +4,14 @@ import Link from "next/link";
 import { prisma } from "../../../lib/prisma";
 import styles from "./styles.module.scss";
 import HinoClient from "../../components/HinoClient";
+import { requireBibleAuth } from "../../../lib/auth/server";
 
 export default async function HinoPage({
   params,
 }: {
   params: Promise<{ numero: string }>;
 }) {
+  const auth = await requireBibleAuth();
   const { numero } = await params;
   const n = Number(numero);
 
@@ -23,7 +25,8 @@ export default async function HinoPage({
       id: true,
       number: true,
       title: true,
-      favorite: {
+      favorites: {
+        where: { userId: auth.user.id },
         select: { id: true },
       },
       verses: {
@@ -61,7 +64,7 @@ export default async function HinoPage({
         hymnId={hino.id}
         hymnNumber={hino.number}
         hymnTitle={hino.title}
-        isFavorite={Boolean(hino.favorite)}
+        isFavorite={hino.favorites.length > 0}
         verses={hino.verses}
         styles={styles}
       />

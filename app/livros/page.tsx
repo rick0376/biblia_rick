@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "../../lib/prisma";
 import styles from "./styles.module.scss";
 import LivrosClient from "../components/LivrosClient";
+import { requireBibleAuth } from "../../lib/auth/server";
 
 type Version = "acf" | "ara" | "nvi" | "kja";
 
@@ -18,6 +19,7 @@ export default async function Livros({
 }: {
   searchParams?: Promise<{ v?: string }>;
 }) {
+  const auth = await requireBibleAuth();
   const { v } = (await searchParams) ?? {};
   const version = normalizeVersion(v);
 
@@ -68,7 +70,7 @@ export default async function Livros({
           verses: {
             some: {
               translationId: translation.id,
-              note: { isNot: null },
+              notes: { some: { userId: auth.user.id } },
             },
           },
         },

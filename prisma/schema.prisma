@@ -43,6 +43,20 @@ model Translation {
   verses Verse[]
 }
 
+model BibleUser {
+  id          String   @id
+  panelUserId String   @unique
+  name        String
+  username    String
+
+  favoriteVerses FavoriteVerse[]
+  favoriteHymns  FavoriteHymn[]
+  notes          VerseNote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Verse {
   id            Int    @id @default(autoincrement())
   number        Int
@@ -54,8 +68,8 @@ model Verse {
   translationId Int
   translation   Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
 
-  favorite      FavoriteVerse?
-  note          VerseNote?
+  favorites     FavoriteVerse[]
+  notes         VerseNote[]
 
   @@unique([chapterId, number, translationId])
 }
@@ -70,7 +84,7 @@ model Hymn {
   title    String
   chorus   String?
   verses   HymnVerse[]
-  favorite FavoriteHymn?
+  favorites FavoriteHymn[]
 }
 
 enum HymnVerseType {
@@ -99,16 +113,26 @@ model HymnVerse {
 
 model FavoriteVerse {
   id        Int      @id @default(autoincrement())
-  verseId   Int      @unique
+  userId    String
+  user      BibleUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verseId   Int
   verse     Verse    @relation(fields: [verseId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+
+  @@unique([userId, verseId])
+  @@index([userId])
 }
 
 model FavoriteHymn {
   id        Int      @id @default(autoincrement())
-  hymnId    Int      @unique
+  userId    String
+  user      BibleUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hymnId    Int
   hymn      Hymn     @relation(fields: [hymnId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+
+  @@unique([userId, hymnId])
+  @@index([userId])
 }
 
 /* =========================
@@ -117,10 +141,15 @@ model FavoriteHymn {
 
 model VerseNote {
   id        Int      @id @default(autoincrement())
-  verseId   Int      @unique
+  userId    String
+  user      BibleUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verseId   Int
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   verse     Verse    @relation(fields: [verseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, verseId])
+  @@index([userId])
 }

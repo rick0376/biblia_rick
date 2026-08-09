@@ -1,6 +1,7 @@
 //app/livros/[slug]/[capitulo]/page.tsx
 
 import { prisma } from "../../../../lib/prisma";
+import { requireBibleAuth } from "../../../../lib/auth/server";
 import CapituloClient from "../../../components/CapituloClient";
 
 type Version = "acf" | "ara" | "nvi" | "kja";
@@ -17,6 +18,7 @@ export default async function CapituloPage({
   params: Promise<{ slug: string; capitulo: string }>;
   searchParams?: Promise<{ v?: string }>;
 }) {
+  const auth = await requireBibleAuth();
   const { slug, capitulo } = await params;
   const { v } = (await searchParams) ?? {};
   const version = normalizeVersion(v);
@@ -45,13 +47,13 @@ export default async function CapituloPage({
         where: { translationId: translation.id },
         orderBy: { number: "asc" },
         include: {
-          favorite: {
+          favorites: {
+            where: { userId: auth.user.id },
             select: { id: true },
           },
-          note: {
-            select: {
-              content: true,
-            },
+          notes: {
+            where: { userId: auth.user.id },
+            select: { content: true },
           },
         },
       },
@@ -69,8 +71,8 @@ export default async function CapituloPage({
         id: vv.id,
         number: vv.number,
         text: vv.text,
-        isFavorite: Boolean(vv.favorite),
-        noteContent: vv.note?.content ?? null,
+        isFavorite: vv.favorites.length > 0,
+        noteContent: vv.notes[0]?.content ?? null,
       }))}
       version={version}
     />

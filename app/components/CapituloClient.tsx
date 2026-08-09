@@ -68,9 +68,29 @@ export default function CapituloClient({
   );
 
   useEffect(() => {
+    const hash = window.location.hash;
+
+    if (hash.startsWith("#v-")) {
+      const numero = Number(hash.replace("#v-", ""));
+
+      if (Number.isFinite(numero) && numero > 0) {
+        setAtivo(numero);
+
+        setTimeout(() => {
+          document
+            .getElementById(`v-${numero}`)
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
+
+        return;
+      }
+    }
+
     const el = document.getElementById(`v-${ativo}`);
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [ativo]);
+    // Executa apenas na abertura da página; cliques nos botões já fazem o scroll.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function toggleFavorito(verseId: number) {
     try {

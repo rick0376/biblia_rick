@@ -1,8 +1,9 @@
-//app/page.tsx
-
 import Link from "next/link";
 import { prisma } from "../lib/prisma";
 import styles from "./styles.module.scss";
+import PergunteBiblia from "./components/PergunteBiblia";
+import LogoutButton from "./components/LogoutButton";
+import { requireBibleAuth } from "../lib/auth/server";
 
 type Version = "acf" | "ara" | "nvi" | "kja";
 
@@ -17,136 +18,170 @@ export default async function Home({
 }: {
   searchParams?: Promise<{ v?: string }>;
 }) {
+  const auth = await requireBibleAuth();
   const { v } = (await searchParams) ?? {};
   const version = normalizeVersion(v);
 
-  const booksCount = await prisma.book.count();
-  const hymnsCount = await prisma.hymn.count();
+  const [booksCount, hymnsCount, favoritesCount, notesCount] = await Promise.all([
+    prisma.book.count(),
+    prisma.hymn.count(),
+    prisma.favoriteVerse.count({
+      where: { user: { panelUserId: auth.user.id } },
+    }),
+    prisma.verseNote.count({
+      where: { user: { panelUserId: auth.user.id } },
+    }),
+  ]);
 
   return (
-    <main className={styles.container}>
-      <section className={styles.card}>
-        <span className={`${styles.corner} ${styles.cornerTL}`} />
-        <span className={`${styles.corner} ${styles.cornerTR}`} />
-        <span className={`${styles.corner} ${styles.cornerBL}`} />
-        <span className={`${styles.corner} ${styles.cornerBR}`} />
-
-        <div className={styles.inner}>
-          <div className={styles.headerRow}>
-            <span className={styles.badge}>📜 Leitura • Estudo • Pesquisa</span>
-            <span className={styles.badge}>
-              ✨ Versão: {version.toUpperCase()}
+    <main className={styles.page}>
+      <div className={styles.shell}>
+        <aside className={styles.sidebar}>
+          <Link href={`/?v=${version}`} className={styles.brand}>
+            <span className={styles.brandIcon}>📖</span>
+            <span>
+              <strong>Bíblia Sagrada</strong>
+              <small>LHP</small>
             </span>
-          </div>
-
-          <h1 className={styles.title}>Bíblia Sagrada - LHP</h1>
-
-          <div className={styles.ornament} />
-
-          <p className={styles.subtitle}>
-            Uma experiência limpa e rápida para navegar por livros, capítulos,
-            versículos e a Harpa Cristã.
-          </p>
-
-          <Link
-            href="/?v=acf"
-            className={`${styles.secondaryBtn} ${version === "acf" ? styles.activeBtn : ""}`}
-            aria-current={version === "acf" ? "page" : undefined}
-          >
-            ACF
           </Link>
 
-          <Link
-            href="/?v=ara"
-            className={`${styles.secondaryBtn} ${version === "ara" ? styles.activeBtn : ""}`}
-            aria-current={version === "ara" ? "page" : undefined}
-          >
-            ARA
-          </Link>
-
-          <Link
-            href="/?v=nvi"
-            className={`${styles.secondaryBtn} ${version === "nvi" ? styles.activeBtn : ""}`}
-            aria-current={version === "nvi" ? "page" : undefined}
-          >
-            NVI
-          </Link>
-
-          <Link
-            href="/?v=kja"
-            className={`${styles.secondaryBtn} ${version === "kja" ? styles.activeBtn : ""}`}
-            aria-current={version === "kja" ? "page" : undefined}
-          >
-            KJA
-          </Link>
-
-          <Link className={styles.secondaryBtn} href="/favoritos">
-            ⭐ Favoritos
-          </Link>
-
-          <Link className={styles.secondaryBtn} href="/anotacoes">
-            📝 Anotações
-          </Link>
-
-          <div className={styles.stats}>
-            <div className={styles.stat}>
-              <div className={styles.statLabel}>Livros bíblicos</div>
-              <div className={styles.statValue}>{booksCount}</div>
-            </div>
-
-            <div className={styles.stat}>
-              <div className={styles.statLabel}>Hinos (Harpa)</div>
-              <div className={styles.statValue}>{hymnsCount}</div>
-            </div>
-
-            <div className={styles.stat}>
-              <div className={styles.statLabel}>Autor</div>
-              <div className={styles.statValue}>Rick Pereira</div>
-            </div>
-          </div>
-
-          <div className={styles.actions}>
-            <Link className={styles.primaryBtn} href={`/livros?v=${version}`}>
-              📖 Bíblia Sagrada →
+          <nav className={styles.nav} aria-label="Navegação principal">
+            <Link href={`/?v=${version}`} className={`${styles.navItem} ${styles.navActive}`}>
+              <span>⌂</span> Início
             </Link>
-
-            <Link className={styles.secondaryBtn} href="/harpa">
-              🎵 Harpa ({hymnsCount})
+            <Link href={`/livros?v=${version}`} className={styles.navItem}>
+              <span>▤</span> Bíblia
             </Link>
-
-            <Link
-              className={styles.secondaryBtn}
-              href={`/livros/apocalipse?v=${version}`}
-            >
-              Ir para Apocalipse
+            <Link href="/harpa" className={styles.navItem}>
+              <span>♫</span> Harpa Cristã
             </Link>
-          </div>
+            <Link href="/favoritos" className={styles.navItem}>
+              <span>☆</span> Favoritos
+            </Link>
+            <Link href="/anotacoes" className={styles.navItem}>
+              <span>▧</span> Anotações
+            </Link>
+          </nav>
 
-          <div className={styles.footerHint}>
-            Desenvolvido por Rick Pereira • (12) 99189-0682{"   "}
-            <a
-              href="https://wa.me/5512991890682"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="WhatsApp"
-              title="WhatsApp"
-              className={styles.whatsIcon}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 32 32"
-                width="28"
-                height="28"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M19.11 17.21c-.27-.14-1.61-.79-1.86-.88-.25-.09-.43-.14-.61.14-.18.27-.7.88-.86 1.06-.16.18-.31.2-.58.07-.27-.14-1.12-.41-2.14-1.3-.79-.7-1.33-1.56-1.49-1.83-.16-.27-.02-.42.12-.56.13-.13.27-.31.41-.47.14-.16.18-.27.27-.45.09-.18.05-.34-.02-.47-.07-.14-.61-1.47-.84-2.02-.22-.53-.45-.45-.61-.46h-.52c-.18 0-.47.07-.72.34-.25.27-.95.93-.95 2.27s.97 2.64 1.11 2.82c.14.18 1.9 2.9 4.6 4.07.64.27 1.14.43 1.53.55.64.2 1.22.17 1.68.1.51-.08 1.61-.66 1.84-1.3.23-.64.23-1.18.16-1.3-.07-.11-.25-.18-.52-.32z" />
-                <path d="M16.02 3.2c-7.05 0-12.78 5.72-12.78 12.76 0 2.24.59 4.43 1.7 6.35L3.2 28.8l6.66-1.74a12.8 12.8 0 0 0 6.16 1.57h.01c7.04 0 12.77-5.72 12.77-12.77 0-3.41-1.33-6.62-3.75-9.03A12.68 12.68 0 0 0 16.02 3.2zm0 23.28h-.01a10.62 10.62 0 0 1-5.41-1.48l-.39-.23-3.95 1.03 1.05-3.85-.25-.4a10.55 10.55 0 0 1-1.62-5.66c0-5.84 4.75-10.59 10.59-10.59 2.83 0 5.49 1.1 7.49 3.1a10.5 10.5 0 0 1 3.1 7.49c0 5.84-4.75 10.59-10.6 10.59z" />
-              </svg>
-            </a>
+          <div className={styles.sidebarBottom}>
+            <span className={styles.miniLabel}>Leitura • Estudo • Pesquisa</span>
+            <span className={styles.sidebarVerse}>“Lâmpada para os meus pés é tua palavra.”</span>
+            <span className={styles.sidebarRef}>Salmos 119:105</span>
           </div>
-        </div>
-      </section>
+        </aside>
+
+        <section className={styles.content}>
+          <header className={styles.topbar}>
+            <div className={styles.mobileBrand}>📖 Bíblia Sagrada <b>LHP</b></div>
+            <div className={styles.topActions}>
+              <div className={styles.versionMenu}>
+                <span>Versão:</span>
+                {(["acf", "ara", "nvi", "kja"] as Version[]).map((item) => (
+                  <Link
+                    key={item}
+                    href={`/?v=${item}`}
+                    aria-current={version === item ? "page" : undefined}
+                  >
+                    {item.toUpperCase()}
+                  </Link>
+                ))}
+              </div>
+              <span className={styles.userChip}>👤 Olá, {auth.user.name}</span>
+              <LogoutButton />
+            </div>
+          </header>
+
+          <div className={styles.mainContent}>
+            <section className={styles.hero}>
+              <div className={styles.heroGlow} />
+              <div className={styles.heroContent}>
+                <span className={styles.heroEyebrow}>Bem-vindo à</span>
+                <h1>Bíblia Sagrada - LHP</h1>
+                <p>
+                  Uma experiência limpa e rápida para navegar por livros, capítulos,
+                  versículos e a Harpa Cristã.
+                </p>
+              </div>
+
+              <div className={styles.stats}>
+                <div className={styles.statCard}>
+                  <span className={styles.statIcon}>📖</span>
+                  <div><strong>{booksCount}</strong><small>Livros Bíblicos</small></div>
+                </div>
+                <div className={styles.statCard}>
+                  <span className={styles.statIcon}>♫</span>
+                  <div><strong>{hymnsCount}</strong><small>Hinos (Harpa)</small></div>
+                </div>
+                <div className={styles.statCard}>
+                  <span className={styles.statIcon}>★</span>
+                  <div><strong>{favoritesCount}</strong><small>Favoritos</small></div>
+                </div>
+                <div className={styles.statCard}>
+                  <span className={styles.statIcon}>▧</span>
+                  <div><strong>{notesCount}</strong><small>Anotações</small></div>
+                </div>
+              </div>
+            </section>
+
+            <PergunteBiblia version={version} />
+
+            <section className={styles.quickSection}>
+              <div className={styles.sectionTitle}>♛ <span>Acesso Rápido</span></div>
+              <div className={styles.quickGrid}>
+                <Link href={`/livros?v=${version}`} className={`${styles.quickCard} ${styles.quickBible}`}>
+                  <span>📖</span>
+                  <div><strong>Ler a Bíblia</strong><small>Navegar livros e capítulos</small></div>
+                </Link>
+                <Link href="/harpa" className={`${styles.quickCard} ${styles.quickHarpa}`}>
+                  <span>♫</span>
+                  <div><strong>Harpa Cristã</strong><small>{hymnsCount} hinos de louvor</small></div>
+                </Link>
+                <Link href="/favoritos" className={`${styles.quickCard} ${styles.quickFavorites}`}>
+                  <span>★</span>
+                  <div><strong>Favoritos</strong><small>Versículos marcados</small></div>
+                </Link>
+                <Link href="/anotacoes" className={`${styles.quickCard} ${styles.quickNotes}`}>
+                  <span>▧</span>
+                  <div><strong>Anotações</strong><small>Suas reflexões</small></div>
+                </Link>
+              </div>
+            </section>
+
+            <section className={styles.dailyVerse}>
+              <div className={styles.dailyContent}>
+                <div className={styles.sectionTitle}>❝ <span>Versículo do Dia</span></div>
+                <blockquote>
+                  “Entrega o teu caminho ao Senhor; confia nele, e o mais ele fará.”
+                </blockquote>
+                <strong>Salmos 37:5</strong>
+              </div>
+              <div className={styles.bibleArt} aria-hidden="true">
+                <span className={styles.bookGlow} />
+                <span className={styles.openBook}>📖</span>
+              </div>
+            </section>
+
+            <footer className={styles.footer}>
+              <span>
+                Desenvolvido com <b>♥</b> por Rick Pereira • (12) 99189-0682
+                <a
+                  href="https://wa.me/5512991890682"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="WhatsApp"
+                  title="WhatsApp"
+                  className={styles.whatsIcon}
+                >
+                  ◉
+                </a>
+              </span>
+              <Link href={`/livros/apocalipse?v=${version}`} className={styles.apocalypseBtn}>
+                Ir para Apocalipse <span>→</span>
+              </Link>
+            </footer>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }

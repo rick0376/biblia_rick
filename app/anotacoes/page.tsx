@@ -2,12 +2,16 @@
 
 import Link from "next/link";
 import { prisma } from "../../lib/prisma";
+import { requireBibleAuth } from "../../lib/auth/server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function AnotacoesPage() {
+  const auth = await requireBibleAuth();
+
   const anotacoes = await prisma.verseNote.findMany({
+    where: { userId: auth.user.id },
     orderBy: { updatedAt: "desc" },
     include: {
       verse: {
