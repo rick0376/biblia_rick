@@ -2,7 +2,7 @@
 
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./styles.module.scss";
@@ -31,28 +31,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [support, setSupport] = useState<{ whatsappUrl?: string | null } | null>(null);
-
-  useEffect(() => {
-    async function carregarSuporte() {
-      try {
-        const response = await fetch("/api/auth/support", {
-          method: "GET",
-          cache: "no-store",
-        });
-
-        if (!response.ok) return;
-
-        const data = await response.json();
-
-        setSupport(data?.support ?? null);
-      } catch (error) {
-        console.error("Erro ao carregar suporte:", error);
-      }
-    }
-
-    carregarSuporte();
-  }, []);
+  const [support, setSupport] = useState<{
+    whatsappUrl?: string | null;
+  } | null>(null);
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
@@ -61,6 +42,7 @@ export default function LoginPage() {
 
     setLoading(true);
     setError("");
+    setSupport(null);
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -114,14 +96,95 @@ export default function LoginPage() {
         {/* LADO ESQUERDO */}
 
         <div className={styles.presentation}>
-          <Image
-            src="/login/login-biblia.png"
-            alt="Bíblia Sagrada"
-            fill
-            priority
-            className={styles.presentationImage}
-            sizes="(max-width: 1000px) 100vw, 55vw"
-          />
+          <div className={styles.glow} />
+
+          <div
+            className={styles.cross}
+            aria-hidden="true"
+          >
+            ✝
+          </div>
+
+          <div className={styles.brand}>
+            <div className={styles.dove}>
+              <Image
+                src="/login/dove.png"
+                alt="Pomba"
+                width={76}
+                height={76}
+                priority
+              />
+            </div>
+
+            <div>
+              <div className={styles.brandTitle}>
+                BÍBLIA
+              </div>
+
+              <div
+                className={styles.brandTitleLight}
+              >
+                SAGRADA
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.dividerTitle}>
+            A PALAVRA QUE TRANSFORMA
+          </div>
+
+          <blockquote>
+            “Lâmpada para os meus pés é a tua
+            palavra,
+            <br />
+            e luz para o meu caminho.”
+
+            <cite>
+              Salmos 119:105
+            </cite>
+          </blockquote>
+
+          <div className={styles.bibleVisual}>
+            <Image
+              src="/login/bible.png"
+              alt="Bíblia aberta"
+              fill
+              className={styles.bibleImage}
+              priority
+            />
+          </div>
+
+          <div className={styles.features}>
+            <span>
+              ▱
+              <b>Leia</b>
+              <small>a Bíblia</small>
+            </span>
+
+            <span>
+              ♡
+              <b>Favorite</b>
+              <small>versículos</small>
+            </span>
+
+            <span>
+              ▤
+              <b>Anote</b>
+              <small>suas reflexões</small>
+            </span>
+
+            <span>
+              ⌕
+              <b>Busque</b>
+              <small>conhecimento</small>
+            </span>
+
+            <span>
+              ◯
+              <b>Pergunte</b>
+              <small>à Bíblia (IA)</small>
+            </span>
+          </div>
         </div>
 
 
@@ -136,14 +199,17 @@ export default function LoginPage() {
           </div>
 
           <div className={styles.loginIcon}>
-            <Image
-              src="/login/login-icon.png"
-              alt="Bíblia Sagrada"
-              width={110}
-              height={110}
-              className={styles.loginIconImage}
-              priority
-            />
+            <div
+              className={styles.loginCross}
+            >
+              ✝
+            </div>
+
+            <div
+              className={styles.loginBook}
+            >
+              ﹀
+            </div>
           </div>
 
           <h1>Bem-vindo!</h1>
@@ -336,16 +402,9 @@ export default function LoginPage() {
         </div>
       </section>
 
-      <footer className={styles.footer}>
-        <span className={styles.footerMessage}>
-          ♡ Feito com amor para edificação do corpo de Cristo
-        </span>
-
-        <span className={styles.footerDeveloper}>
-          Desenvolvido por <strong>Rick Pereira</strong>
-          <span className={styles.footerDivider}>•</span>
-          <strong className={styles.lhp}>LHPSYSTEMS</strong>
-        </span>
+      <footer>
+        ♡ &nbsp; Feito com amor para
+        edificação do corpo de Cristo
       </footer>
     </main>
   );

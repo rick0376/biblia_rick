@@ -1,3 +1,5 @@
+// app/api/auth/login/route.ts
+
 import { NextResponse } from "next/server";
 import { BIBLE_AUTH_COOKIE, getBibleAppKey, getPanelApiUrl } from "../../../../lib/auth/config";
 import { prisma } from "../../../../lib/prisma";
@@ -59,6 +61,7 @@ export async function POST(request: Request) {
       allowed: true,
       user: panelData.user,
       expiresInSeconds: panelData.expiresInSeconds,
+      support: panelData.support ?? null,
     });
 
     response.cookies.set({
