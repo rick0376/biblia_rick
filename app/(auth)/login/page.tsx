@@ -273,7 +273,7 @@ export default function LoginPage() {
               </label>
 
               <span className={styles.help}>
-                Acesso controlado pelo LHP
+                Acesso controlado por Rick Pereira
               </span>
             </div>
 
