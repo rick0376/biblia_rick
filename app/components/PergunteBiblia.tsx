@@ -1,15 +1,24 @@
-//app/components/PergunteBiblia.tsx
+// app/components/PergunteBiblia.tsx
 
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useState,
+} from "react";
+
 import styles from "./PergunteBiblia.module.scss";
 
-type Version = "acf" | "ara" | "nvi" | "kja";
+type Version =
+  | "acf"
+  | "ara"
+  | "nvi"
+  | "kja";
 
 type Reference = {
-  id: number;
+  id: string | number;
   number: number;
   text: string;
   reference: string;
@@ -18,10 +27,21 @@ type Reference = {
   chapter: number;
 };
 
+type CitedReference = {
+  reference: string;
+  matchedText: string;
+  book: string;
+  slug: string;
+  chapter: number;
+  verseStart: number;
+  verseEnd: number | null;
+};
+
 type ApiResult = {
   ok: boolean;
   answer?: string;
   references?: Reference[];
+  citedReferences?: CitedReference[];
   error?: string;
 };
 
@@ -39,37 +59,105 @@ const DEFAULT_SUGGESTIONS = [
   "Esperança",
 ];
 
-const STORAGE_KEY = "pergunte_biblia_suggestions";
+const STORAGE_KEY =
+  "pergunte_biblia_suggestions";
+
+function escapeRegExp(
+  value: string,
+) {
+  return value.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&",
+  );
+}
 
 export default function PergunteBiblia({
   version,
   canUseAi,
 }: PergunteBibliaProps) {
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState<string | null>(null);
-  const [references, setReferences] = useState<Reference[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [suggestions, setSuggestions] = useState<string[]>(
-    DEFAULT_SUGGESTIONS,
-  );
+  const [
+    question,
+    setQuestion,
+  ] = useState("");
+
+  const [
+    answer,
+    setAnswer,
+  ] =
+    useState<string | null>(
+      null,
+    );
+
+  const [
+    references,
+    setReferences,
+  ] =
+    useState<Reference[]>([]);
+
+  const [
+    citedReferences,
+    setCitedReferences,
+  ] =
+    useState<CitedReference[]>(
+      [],
+    );
+
+  const [
+    loading,
+    setLoading,
+  ] =
+    useState(false);
+
+  const [
+    error,
+    setError,
+  ] =
+    useState<string | null>(
+      null,
+    );
+
+  const [
+    suggestions,
+    setSuggestions,
+  ] =
+    useState<string[]>(
+      DEFAULT_SUGGESTIONS,
+    );
+
+  /* =======================================================
+     SUGESTÕES SALVAS
+  ======================================================= */
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved =
+        localStorage.getItem(
+          STORAGE_KEY,
+        );
 
-      if (!saved) return;
+      if (!saved) {
+        return;
+      }
 
-      const parsed = JSON.parse(saved);
+      const parsed =
+        JSON.parse(saved);
 
       if (
-        Array.isArray(parsed) &&
-        parsed.every((item) => typeof item === "string")
+        Array.isArray(
+          parsed,
+        ) &&
+        parsed.every(
+          (item) =>
+            typeof item ===
+            "string",
+        )
       ) {
-        setSuggestions(parsed);
+        setSuggestions(
+          parsed,
+        );
       }
     } catch {
-      // ignora erro de leitura
+      // ignora erro
     }
   }, []);
 
@@ -77,127 +165,351 @@ export default function PergunteBiblia({
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify(suggestions),
+        JSON.stringify(
+          suggestions,
+        ),
       );
     } catch {
-      // ignora erro de gravação
+      // ignora erro
     }
   }, [suggestions]);
 
+  /* =======================================================
+     LIMPAR RESULTADO
+  ======================================================= */
+
   function clearResult() {
     setAnswer(null);
+
     setReferences([]);
+
+    setCitedReferences([]);
+
     setError(null);
   }
 
   function clearAll() {
     setQuestion("");
+
     clearResult();
   }
 
-  function removeSuggestion(item: string) {
-    setSuggestions((current) =>
-      current.filter((suggestion) => suggestion !== item),
+  /* =======================================================
+     SUGESTÕES
+  ======================================================= */
+
+  function removeSuggestion(
+    item: string,
+  ) {
+    setSuggestions(
+      (current) =>
+        current.filter(
+          (suggestion) =>
+            suggestion !==
+            item,
+        ),
     );
   }
 
   function restoreSuggestions() {
-    setSuggestions(DEFAULT_SUGGESTIONS);
-  }
-
-  function fillSuggestion(item: string) {
-    setQuestion(
-      `O que a Bíblia ensina sobre ${item.toLowerCase()}?`,
+    setSuggestions(
+      DEFAULT_SUGGESTIONS,
     );
   }
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  function fillSuggestion(
+    item: string,
+  ) {
+    setQuestion(
+      `O que a Bíblia ensina sobre ${item.toLowerCase()}?`,
+    );
+
+    clearResult();
+  }
+
+  /* =======================================================
+     ENVIA A PERGUNTA
+  ======================================================= */
+
+  async function submit(
+    event:
+      FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
-    if (!canUseAi) return;
+    if (!canUseAi) {
+      return;
+    }
 
-    const trimmed = question.trim();
+    const trimmed =
+      question.trim();
 
-    if (trimmed.length < 3 || loading) return;
+    if (
+      trimmed.length < 3 ||
+      loading
+    ) {
+      return;
+    }
 
     setLoading(true);
+
     setError(null);
+
     setAnswer(null);
+
     setReferences([]);
 
+    setCitedReferences([]);
+
     try {
-      const response = await fetch("/api/biblia/ia", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          question: trimmed,
-          version,
-        }),
-      });
+      const response =
+        await fetch(
+          "/api/biblia/ia",
+          {
+            method: "POST",
 
-      const data = (await response.json()) as ApiResult;
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
 
-      if (!response.ok || !data.ok) {
+            body:
+              JSON.stringify({
+                question:
+                  trimmed,
+
+                version,
+              }),
+          },
+        );
+
+      const data =
+        (await response.json()) as ApiResult;
+
+      if (
+        !response.ok ||
+        !data.ok
+      ) {
         setError(
           data.error ||
-          "Não foi possível responder agora.",
+            "Não foi possível responder agora.",
         );
+
         return;
       }
 
-      setAnswer(data.answer || null);
-      setReferences(data.references || []);
+      setAnswer(
+        data.answer ||
+          null,
+      );
+
+      setReferences(
+        data.references ||
+          [],
+      );
+
+      setCitedReferences(
+        data.citedReferences ||
+          [],
+      );
     } catch {
       setError(
-        "Não foi possível conectar à inteligência bíblica.",
+        "Não foi possível conectar à Inteligência Bíblica.",
       );
     } finally {
       setLoading(false);
     }
   }
 
+  /* =======================================================
+     TRANSFORMA REFERÊNCIAS DA RESPOSTA EM LINKS
+  ======================================================= */
+
+  function renderAnswer() {
+    if (!answer) {
+      return null;
+    }
+
+    if (
+      citedReferences.length ===
+      0
+    ) {
+      return answer;
+    }
+
+    const matchedTexts =
+      citedReferences
+        .map(
+          (citation) =>
+            citation.matchedText,
+        )
+        .filter(Boolean)
+        .sort(
+          (a, b) =>
+            b.length -
+            a.length,
+        );
+
+    if (
+      matchedTexts.length ===
+      0
+    ) {
+      return answer;
+    }
+
+    const pattern =
+      matchedTexts
+        .map(
+          (text) =>
+            escapeRegExp(
+              text,
+            ),
+        )
+        .join("|");
+
+    const regex =
+      new RegExp(
+        `(${pattern})`,
+        "g",
+      );
+
+    return answer
+      .split(regex)
+      .map(
+        (
+          part,
+          index,
+        ) => {
+          const citation =
+            citedReferences.find(
+              (item) =>
+                item.matchedText ===
+                part,
+            );
+
+          if (!citation) {
+            return part;
+          }
+
+          return (
+            <Link
+              key={`${citation.slug}-${citation.chapter}-${citation.verseStart}-${index}`}
+              href={`/livros/${citation.slug}/${citation.chapter}?v=${version}#v-${citation.verseStart}`}
+              className={
+                styles.inlineBibleLink
+              }
+              title={`Abrir ${citation.reference}`}
+            >
+              {part}
+            </Link>
+          );
+        },
+      );
+  }
+
   const showRestoreButton =
-    suggestions.length < DEFAULT_SUGGESTIONS.length;
+    suggestions.length <
+    DEFAULT_SUGGESTIONS.length;
+
+  /* =======================================================
+     TELA
+  ======================================================= */
 
   return (
-    <section className={styles.container}>
-      <div className={styles.aiHeader}>
-        <div className={styles.aiIcon}>✦</div>
+    <section
+      className={
+        styles.container
+      }
+    >
+      {/* ===================================================
+          CABEÇALHO
+      =================================================== */}
 
-        <div className={styles.aiTitle}>
-          <span className={styles.badge}>
+      <div
+        className={
+          styles.aiHeader
+        }
+      >
+        <div
+          className={
+            styles.aiIcon
+          }
+        >
+          ✦
+        </div>
+
+        <div
+          className={
+            styles.aiTitle
+          }
+        >
+          <span
+            className={
+              styles.badge
+            }
+          >
             Pesquisa inteligente
           </span>
 
-          <h2>Pergunte à Bíblia</h2>
+          <h2>
+            Pergunte à Bíblia
+          </h2>
 
           <p>
-            Faça uma pergunta e encontre uma resposta
-            acompanhada dos versículos relacionados na versão{" "}
+            Faça uma pergunta e
+            encontre uma resposta
+            acompanhada dos
+            versículos relacionados
+            na versão{" "}
             {version.toUpperCase()}.
           </p>
         </div>
 
-        <div className={styles.versionBadge}>
-          📖 {version.toUpperCase()}
+        <div
+          className={
+            styles.versionBadge
+          }
+        >
+          📖{" "}
+          {version.toUpperCase()}
         </div>
       </div>
 
+      {/* ===================================================
+          PERMISSÃO
+      =================================================== */}
+
       {!canUseAi && (
-        <div className={styles.error}>
-          🔒 A Inteligência Bíblica não está liberada para
-          este usuário.
+        <div
+          className={
+            styles.error
+          }
+        >
+          🔒 A Inteligência
+          Bíblica não está liberada
+          para este usuário.
         </div>
       )}
 
-      <form onSubmit={submit} className={styles.form}>
+      {/* ===================================================
+          FORMULÁRIO
+      =================================================== */}
+
+      <form
+        onSubmit={submit}
+        className={styles.form}
+      >
         <textarea
-          className={styles.input}
+          className={
+            styles.input
+          }
           value={question}
-          onChange={(event) =>
-            setQuestion(event.target.value)
+          onChange={(
+            event,
+          ) =>
+            setQuestion(
+              event.target.value,
+            )
           }
           placeholder={
             canUseAi
@@ -206,22 +518,50 @@ export default function PergunteBiblia({
           }
           maxLength={500}
           rows={3}
-          disabled={loading || !canUseAi}
+          disabled={
+            loading ||
+            !canUseAi
+          }
           aria-label="Pergunte à Bíblia"
         />
 
-        <div className={styles.formFooter}>
-          <span className={styles.hint}>
-            {question.length}/500
+        <div
+          className={
+            styles.formFooter
+          }
+        >
+          <span
+            className={
+              styles.hint
+            }
+          >
+            {question.length}
+            /500
           </span>
 
-          <div className={styles.formActions}>
-            {(question || answer || error || references.length > 0) && (
+          <div
+            className={
+              styles.formActions
+            }
+          >
+            {(question ||
+              answer ||
+              error ||
+              references.length >
+                0 ||
+              citedReferences.length >
+                0) && (
               <button
                 type="button"
-                className={styles.secondaryButton}
-                onClick={clearAll}
-                disabled={loading}
+                className={
+                  styles.secondaryButton
+                }
+                onClick={
+                  clearAll
+                }
+                disabled={
+                  loading
+                }
               >
                 Limpar
               </button>
@@ -229,11 +569,15 @@ export default function PergunteBiblia({
 
             <button
               type="submit"
-              className={styles.button}
+              className={
+                styles.button
+              }
               disabled={
                 !canUseAi ||
                 loading ||
-                question.trim().length < 3
+                question
+                  .trim()
+                  .length < 3
               }
             >
               {!canUseAi
@@ -246,102 +590,269 @@ export default function PergunteBiblia({
         </div>
       </form>
 
+      {/* ===================================================
+          SUGESTÕES
+      =================================================== */}
+
       <div
-        className={styles.suggestions}
+        className={
+          styles.suggestions
+        }
         aria-label="Sugestões de pesquisa"
       >
-        {suggestions.map((item) => (
-          <div
-            key={item}
-            className={styles.suggestionItem}
-          >
-            <button
-              type="button"
-              className={styles.suggestionButton}
-              onClick={() => fillSuggestion(item)}
-              disabled={loading || !canUseAi}
-              title={`Usar sugestão ${item}`}
+        {suggestions.map(
+          (item) => (
+            <div
+              key={item}
+              className={
+                styles.suggestionItem
+              }
             >
-              {item}
-            </button>
+              <button
+                type="button"
+                className={
+                  styles.suggestionButton
+                }
+                onClick={() =>
+                  fillSuggestion(
+                    item,
+                  )
+                }
+                disabled={
+                  loading ||
+                  !canUseAi
+                }
+                title={`Usar sugestão ${item}`}
+              >
+                {item}
+              </button>
 
-            <button
-              type="button"
-              className={styles.removeSuggestionButton}
-              onClick={() => removeSuggestion(item)}
-              disabled={loading}
-              aria-label={`Excluir sugestão ${item}`}
-              title={`Excluir sugestão ${item}`}
-            >
-              ×
-            </button>
-          </div>
-        ))}
+              <button
+                type="button"
+                className={
+                  styles.removeSuggestionButton
+                }
+                onClick={() =>
+                  removeSuggestion(
+                    item,
+                  )
+                }
+                disabled={
+                  loading
+                }
+                aria-label={`Excluir sugestão ${item}`}
+                title={`Excluir sugestão ${item}`}
+              >
+                ×
+              </button>
+            </div>
+          ),
+        )}
 
         {showRestoreButton && (
           <button
             type="button"
-            className={styles.restoreButton}
-            onClick={restoreSuggestions}
-            disabled={loading}
+            className={
+              styles.restoreButton
+            }
+            onClick={
+              restoreSuggestions
+            }
+            disabled={
+              loading
+            }
           >
             Restaurar sugestões
           </button>
         )}
       </div>
 
+      {/* ===================================================
+          ERRO
+      =================================================== */}
+
       {error && (
-        <div className={styles.error}>⚠️ {error}</div>
+        <div
+          className={
+            styles.error
+          }
+        >
+          ⚠️ {error}
+        </div>
       )}
 
-      {answer && (
-        <div className={styles.result}>
-          <div className={styles.answerHeader}>
-            <span>📜 Resposta</span>
+      {/* ===================================================
+          RESPOSTA
+      =================================================== */}
 
-            <div className={styles.answerHeaderRight}>
+      {answer && (
+        <div
+          className={
+            styles.result
+          }
+        >
+          <div
+            className={
+              styles.answerHeader
+            }
+          >
+            <span>
+              📜 Resposta
+            </span>
+
+            <div
+              className={
+                styles.answerHeaderRight
+              }
+            >
               <button
                 type="button"
-                className={styles.clearResultButton}
-                onClick={clearResult}
+                className={
+                  styles.clearResultButton
+                }
+                onClick={
+                  clearResult
+                }
               >
                 Limpar resposta
               </button>
 
-              <span className={styles.answerVersion}>
+              <span
+                className={
+                  styles.answerVersion
+                }
+              >
                 {version.toUpperCase()}
               </span>
             </div>
           </div>
 
-          <div className={styles.answer}>{answer}</div>
+          {/* RESPOSTA COM LINKS */}
 
-          {references.length > 0 && (
-            <div className={styles.references}>
-              <h3>Versículos encontrados</h3>
+          <div
+            className={
+              styles.answer
+            }
+          >
+            {renderAnswer()}
+          </div>
 
-              <div className={styles.referenceList}>
-                {references.map((reference) => (
-                  <article
-                    key={reference.id}
-                    className={styles.reference}
-                  >
-                    <div className={styles.referenceTop}>
-                      <strong>
-                        {reference.reference}
-                      </strong>
+          {/* REFERÊNCIAS CITADAS PELA GEMINI */}
 
-                      <Link
-                        href={`/livros/${reference.slug}/${reference.chapter}?v=${version}#v-${reference.number}`}
-                        className={styles.readLink}
+          {citedReferences.length >
+            0 && (
+            <div
+              className={
+                styles.citedReferences
+              }
+            >
+              <div
+                className={
+                  styles.citedReferencesHeader
+                }
+              >
+                <h3>
+                  📖 Referências
+                  citadas
+                </h3>
+
+                <span>
+                  {
+                    citedReferences.length
+                  }
+                </span>
+              </div>
+
+              <div
+                className={
+                  styles.citedReferenceList
+                }
+              >
+                {citedReferences.map(
+                  (
+                    citation,
+                  ) => (
+                    <Link
+                      key={`${citation.slug}-${citation.chapter}-${citation.verseStart}-${citation.verseEnd ?? ""}`}
+                      href={`/livros/${citation.slug}/${citation.chapter}?v=${version}#v-${citation.verseStart}`}
+                      className={
+                        styles.citedReferenceLink
+                      }
+                      title={`Abrir ${citation.reference}`}
+                    >
+                      📖{" "}
+                      {
+                        citation.reference
+                      }{" "}
+                      →
+                    </Link>
+                  ),
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* VERSÍCULOS ENCONTRADOS PELA BUSCA */}
+
+          {references.length >
+            0 && (
+            <div
+              className={
+                styles.references
+              }
+            >
+              <h3>
+                Versículos
+                encontrados
+              </h3>
+
+              <div
+                className={
+                  styles.referenceList
+                }
+              >
+                {references.map(
+                  (
+                    reference,
+                  ) => (
+                    <article
+                      key={
+                        reference.id
+                      }
+                      className={
+                        styles.reference
+                      }
+                    >
+                      <div
+                        className={
+                          styles.referenceTop
+                        }
                       >
-                        Ler no contexto →
-                      </Link>
-                    </div>
+                        <strong>
+                          {
+                            reference.reference
+                          }
+                        </strong>
 
-                    <p>{reference.text}</p>
-                  </article>
-                ))}
+                        <Link
+                          href={`/livros/${reference.slug}/${reference.chapter}?v=${version}#v-${reference.number}`}
+                          className={
+                            styles.readLink
+                          }
+                        >
+                          Ler no
+                          contexto →
+                        </Link>
+                      </div>
+
+                      <p>
+                        {
+                          reference.text
+                        }
+                      </p>
+                    </article>
+                  ),
+                )}
               </div>
             </div>
           )}
