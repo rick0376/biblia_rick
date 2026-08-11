@@ -1,4 +1,4 @@
-// app/components/PergunteBiblia.tsx
+ // app/components/PergunteBiblia.tsx
 
 "use client";
 
@@ -50,6 +50,13 @@ type PergunteBibliaProps = {
   canUseAi: boolean;
 };
 
+type SavedSearch = {
+  question: string;
+  answer: string | null;
+  references: Reference[];
+  citedReferences: CitedReference[];
+};
+
 const DEFAULT_SUGGESTIONS = [
   "Ansiedade",
   "Fé",
@@ -59,8 +66,14 @@ const DEFAULT_SUGGESTIONS = [
   "Esperança",
 ];
 
-const STORAGE_KEY =
+const SUGGESTIONS_STORAGE_KEY =
   "pergunte_biblia_suggestions";
+
+function getSearchStorageKey(
+  version: Version,
+) {
+  return `pergunte_biblia_result_${version}`;
+}
 
 function escapeRegExp(
   value: string,
@@ -124,15 +137,21 @@ export default function PergunteBiblia({
       DEFAULT_SUGGESTIONS,
     );
 
+  const [
+    searchLoaded,
+    setSearchLoaded,
+  ] =
+    useState(false);
+
   /* =======================================================
-     SUGESTÕES SALVAS
+     CARREGA SUGESTÕES SALVAS
   ======================================================= */
 
   useEffect(() => {
     try {
       const saved =
         localStorage.getItem(
-          STORAGE_KEY,
+          SUGGESTIONS_STORAGE_KEY,
         );
 
       if (!saved) {
@@ -161,10 +180,14 @@ export default function PergunteBiblia({
     }
   }, []);
 
+  /* =======================================================
+     SALVA SUGESTÕES
+  ======================================================= */
+
   useEffect(() => {
     try {
       localStorage.setItem(
-        STORAGE_KEY,
+        SUGGESTIONS_STORAGE_KEY,
         JSON.stringify(
           suggestions,
         ),
@@ -175,23 +198,146 @@ export default function PergunteBiblia({
   }, [suggestions]);
 
   /* =======================================================
-     LIMPAR RESULTADO
+     CARREGA A ÚLTIMA PERGUNTA E RESPOSTA
+  ======================================================= */
+
+  useEffect(() => {
+    setSearchLoaded(false);
+
+    try {
+      const saved =
+        localStorage.getItem(
+          getSearchStorageKey(
+            version,
+          ),
+        );
+
+      if (!saved) {
+        setQuestion("");
+        setAnswer(null);
+        setReferences([]);
+        setCitedReferences([]);
+        setError(null);
+        setSearchLoaded(true);
+
+        return;
+      }
+
+      const parsed =
+        JSON.parse(
+          saved,
+        ) as SavedSearch;
+
+      setQuestion(
+        typeof parsed.question ===
+          "string"
+          ? parsed.question
+          : "",
+      );
+
+      setAnswer(
+        typeof parsed.answer ===
+          "string"
+          ? parsed.answer
+          : null,
+      );
+
+      setReferences(
+        Array.isArray(
+          parsed.references,
+        )
+          ? parsed.references
+          : [],
+      );
+
+      setCitedReferences(
+        Array.isArray(
+          parsed.citedReferences,
+        )
+          ? parsed.citedReferences
+          : [],
+      );
+
+      setError(null);
+    } catch {
+      setQuestion("");
+      setAnswer(null);
+      setReferences([]);
+      setCitedReferences([]);
+      setError(null);
+    } finally {
+      setSearchLoaded(true);
+    }
+  }, [version]);
+
+  /* =======================================================
+     SALVA PERGUNTA E RESPOSTA
+  ======================================================= */
+
+  useEffect(() => {
+    if (!searchLoaded) {
+      return;
+    }
+
+    try {
+      const data: SavedSearch = {
+        question,
+        answer,
+        references,
+        citedReferences,
+      };
+
+      localStorage.setItem(
+        getSearchStorageKey(
+          version,
+        ),
+        JSON.stringify(
+          data,
+        ),
+      );
+    } catch {
+      // ignora erro
+    }
+  }, [
+    question,
+    answer,
+    references,
+    citedReferences,
+    version,
+    searchLoaded,
+  ]);
+
+  /* =======================================================
+     LIMPAR SOMENTE A RESPOSTA
   ======================================================= */
 
   function clearResult() {
     setAnswer(null);
-
     setReferences([]);
-
     setCitedReferences([]);
-
     setError(null);
   }
 
+  /* =======================================================
+     LIMPAR TUDO
+  ======================================================= */
+
   function clearAll() {
     setQuestion("");
+    setAnswer(null);
+    setReferences([]);
+    setCitedReferences([]);
+    setError(null);
 
-    clearResult();
+    try {
+      localStorage.removeItem(
+        getSearchStorageKey(
+          version,
+        ),
+      );
+    } catch {
+      // ignora erro
+    }
   }
 
   /* =======================================================
@@ -254,11 +400,8 @@ export default function PergunteBiblia({
     setLoading(true);
 
     setError(null);
-
     setAnswer(null);
-
     setReferences([]);
-
     setCitedReferences([]);
 
     try {
@@ -421,10 +564,6 @@ export default function PergunteBiblia({
         styles.container
       }
     >
-      {/* ===================================================
-          CABEÇALHO
-      =================================================== */}
-
       <div
         className={
           styles.aiHeader
@@ -475,10 +614,6 @@ export default function PergunteBiblia({
         </div>
       </div>
 
-      {/* ===================================================
-          PERMISSÃO
-      =================================================== */}
-
       {!canUseAi && (
         <div
           className={
@@ -490,10 +625,6 @@ export default function PergunteBiblia({
           para este usuário.
         </div>
       )}
-
-      {/* ===================================================
-          FORMULÁRIO
-      =================================================== */}
 
       <form
         onSubmit={submit}
@@ -590,10 +721,6 @@ export default function PergunteBiblia({
         </div>
       </form>
 
-      {/* ===================================================
-          SUGESTÕES
-      =================================================== */}
-
       <div
         className={
           styles.suggestions
@@ -622,7 +749,6 @@ export default function PergunteBiblia({
                   loading ||
                   !canUseAi
                 }
-                title={`Usar sugestão ${item}`}
               >
                 {item}
               </button>
@@ -641,7 +767,6 @@ export default function PergunteBiblia({
                   loading
                 }
                 aria-label={`Excluir sugestão ${item}`}
-                title={`Excluir sugestão ${item}`}
               >
                 ×
               </button>
@@ -667,10 +792,6 @@ export default function PergunteBiblia({
         )}
       </div>
 
-      {/* ===================================================
-          ERRO
-      =================================================== */}
-
       {error && (
         <div
           className={
@@ -680,10 +801,6 @@ export default function PergunteBiblia({
           ⚠️ {error}
         </div>
       )}
-
-      {/* ===================================================
-          RESPOSTA
-      =================================================== */}
 
       {answer && (
         <div
@@ -727,8 +844,6 @@ export default function PergunteBiblia({
             </div>
           </div>
 
-          {/* RESPOSTA COM LINKS */}
-
           <div
             className={
               styles.answer
@@ -736,8 +851,6 @@ export default function PergunteBiblia({
           >
             {renderAnswer()}
           </div>
-
-          {/* REFERÊNCIAS CITADAS PELA GEMINI */}
 
           {citedReferences.length >
             0 && (
@@ -778,7 +891,6 @@ export default function PergunteBiblia({
                       className={
                         styles.citedReferenceLink
                       }
-                      title={`Abrir ${citation.reference}`}
                     >
                       📖{" "}
                       {
@@ -791,8 +903,6 @@ export default function PergunteBiblia({
               </div>
             </div>
           )}
-
-          {/* VERSÍCULOS ENCONTRADOS PELA BUSCA */}
 
           {references.length >
             0 && (
