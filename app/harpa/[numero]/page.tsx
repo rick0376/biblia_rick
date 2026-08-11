@@ -1,10 +1,13 @@
-//app/harpa/[numero]/page.tsx
+// app/harpa/[numero]/page.tsx
 
 import Link from "next/link";
+
 import { prisma } from "../../../lib/prisma";
-import styles from "./styles.module.scss";
-import HinoClient from "../../components/HinoClient";
 import { requireBibleAuth } from "../../../lib/auth/server";
+
+import HinoClient from "../../components/HinoClient";
+
+import styles from "./styles.module.scss";
 
 export default async function HinoPage({
   params,
@@ -12,7 +15,9 @@ export default async function HinoPage({
   params: Promise<{ numero: string }>;
 }) {
   const auth = await requireBibleAuth();
+
   const { numero } = await params;
+
   const n = Number(numero);
 
   if (!Number.isFinite(n) || n <= 0) {
@@ -20,17 +25,30 @@ export default async function HinoPage({
   }
 
   const hino = await prisma.hymn.findUnique({
-    where: { number: n },
+    where: {
+      number: n,
+    },
+
     select: {
       id: true,
       number: true,
       title: true,
+
       favorites: {
-        where: { userId: auth.user.id },
-        select: { id: true },
+        where: {
+          userId: auth.user.id,
+        },
+
+        select: {
+          id: true,
+        },
       },
+
       verses: {
-        orderBy: { position: "asc" },
+        orderBy: {
+          position: "asc",
+        },
+
         select: {
           id: true,
           type: true,
@@ -47,8 +65,11 @@ export default async function HinoPage({
 
   return (
     <main className={styles.container}>
-      <header className={styles.headerRow}>
-        <Link href="/harpa" className={styles.backBtn} aria-label="Voltar">
+      <header className={styles.header}>
+        <Link
+          href="/harpa"
+          className={styles.backLink}
+        >
           ←
         </Link>
 
@@ -56,7 +77,10 @@ export default async function HinoPage({
           <h1 className={styles.title}>
             {hino.number}. {hino.title}
           </h1>
-          <p className={styles.subtitle}>{hino.verses.length} estrofes</p>
+
+          <p className={styles.subtitle}>
+            {hino.verses.length} estrofes
+          </p>
         </div>
       </header>
 
@@ -67,6 +91,9 @@ export default async function HinoPage({
         isFavorite={hino.favorites.length > 0}
         verses={hino.verses}
         styles={styles}
+        canAddFavorites={
+          auth.permissions.add_favorites === true
+        }
       />
     </main>
   );

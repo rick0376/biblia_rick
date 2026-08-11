@@ -1,4 +1,4 @@
-//app/livros/[slug]/[capitulo]/page.tsx
+// app/livros/[slug]/[capitulo]/page.tsx
 
 import { prisma } from "../../../../lib/prisma";
 import { requireBibleAuth } from "../../../../lib/auth/server";
@@ -7,7 +7,15 @@ import CapituloClient from "../../../components/CapituloClient";
 type Version = "acf" | "ara" | "nvi" | "kja";
 
 function normalizeVersion(v?: string): Version {
-  if (v === "acf" || v === "ara" || v === "nvi" || v === "kja") return v;
+  if (
+    v === "acf" ||
+    v === "ara" ||
+    v === "nvi" ||
+    v === "kja"
+  ) {
+    return v;
+  }
+
   return "acf";
 }
 
@@ -15,66 +23,124 @@ export default async function CapituloPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string; capitulo: string }>;
-  searchParams?: Promise<{ v?: string }>;
+  params: Promise<{
+    slug: string;
+    capitulo: string;
+  }>;
+
+  searchParams?: Promise<{
+    v?: string;
+  }>;
 }) {
   const auth = await requireBibleAuth();
+
   const { slug, capitulo } = await params;
   const { v } = (await searchParams) ?? {};
+
   const version = normalizeVersion(v);
 
   const numeroCapitulo = Number(capitulo);
-  if (!Number.isFinite(numeroCapitulo) || numeroCapitulo <= 0) {
+
+  if (
+    !Number.isFinite(numeroCapitulo) ||
+    numeroCapitulo <= 0
+  ) {
     return <h1>Capítulo inválido</h1>;
   }
 
-  const translation = await prisma.translation.findUnique({
-    where: { code: version },
-    select: { id: true },
-  });
+  const translation =
+    await prisma.translation.findUnique({
+      where: {
+        code: version,
+      },
 
-  if (!translation) return <h1>Tradução não encontrada</h1>;
+      select: {
+        id: true,
+      },
+    });
 
-  const chapter = await prisma.chapter.findFirst({
-    where: {
-      number: numeroCapitulo,
-      book: { slug },
-      verses: { some: { translationId: translation.id } },
-    },
-    include: {
-      book: true,
-      verses: {
-        where: { translationId: translation.id },
-        orderBy: { number: "asc" },
-        include: {
-          favorites: {
-            where: { userId: auth.user.id },
-            select: { id: true },
-          },
-          notes: {
-            where: { userId: auth.user.id },
-            select: { content: true },
+  if (!translation) {
+    return <h1>Tradução não encontrada</h1>;
+  }
+
+  const chapter =
+    await prisma.chapter.findFirst({
+      where: {
+        number: numeroCapitulo,
+
+        book: {
+          slug,
+        },
+
+        verses: {
+          some: {
+            translationId: translation.id,
           },
         },
       },
-    },
-  });
 
-  if (!chapter) return <h1>Capítulo não encontrado</h1>;
+      include: {
+        book: true,
+
+        verses: {
+          where: {
+            translationId: translation.id,
+          },
+
+          orderBy: {
+            number: "asc",
+          },
+
+          include: {
+            favorites: {
+              where: {
+                userId: auth.user.id,
+              },
+
+              select: {
+                id: true,
+              },
+            },
+
+            notes: {
+              where: {
+                userId: auth.user.id,
+              },
+
+              select: {
+                content: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+  if (!chapter) {
+    return <h1>Capítulo não encontrado</h1>;
+  }
 
   return (
     <CapituloClient
       slug={slug}
       livro={chapter.book.name}
       capitulo={chapter.number}
+      version={version}
+      canAddFavorites={
+        auth.permissions.add_favorites === true
+      }
+      canCreateNotes={
+        auth.permissions.create_notes === true
+      }
       versiculos={chapter.verses.map((vv) => ({
         id: vv.id,
         number: vv.number,
         text: vv.text,
-        isFavorite: vv.favorites.length > 0,
-        noteContent: vv.notes[0]?.content ?? null,
+        isFavorite:
+          vv.favorites.length > 0,
+        noteContent:
+          vv.notes[0]?.content ?? null,
       }))}
-      version={version}
     />
   );
 }

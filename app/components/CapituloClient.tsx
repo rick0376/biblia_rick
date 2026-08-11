@@ -1,9 +1,14 @@
-//app/components/CapituloClient.tsx
+// app/components/CapituloClient.tsx
 
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import styles from "../livros/[slug]/[capitulo]/styles.module.scss";
 
 type Versiculo = {
@@ -14,7 +19,21 @@ type Versiculo = {
   noteContent: string | null;
 };
 
-type Version = "acf" | "ara" | "nvi" | "kja";
+type Version =
+  | "acf"
+  | "ara"
+  | "nvi"
+  | "kja";
+
+type CapituloClientProps = {
+  versiculos: Versiculo[];
+  livro: string;
+  capitulo: number;
+  slug: string;
+  version: Version;
+  canAddFavorites: boolean;
+  canCreateNotes: boolean;
+};
 
 export default function CapituloClient({
   versiculos,
@@ -22,80 +41,128 @@ export default function CapituloClient({
   capitulo,
   slug,
   version,
-}: {
-  versiculos: Versiculo[];
-  livro: string;
-  capitulo: number;
-  slug: string;
-  version: Version;
-}) {
+  canAddFavorites,
+  canCreateNotes,
+}: CapituloClientProps) {
   const [q, setQ] = useState("");
 
-  const [ativo, setAtivo] = useState<number>(
-    () => versiculos?.[0]?.number ?? 1,
-  );
+  const [ativo, setAtivo] =
+    useState<number>(
+      () =>
+        versiculos?.[0]?.number ?? 1,
+    );
 
-  const [favoritos, setFavoritos] = useState<Record<number, boolean>>(
-    Object.fromEntries(versiculos.map((v) => [v.id, v.isFavorite])),
-  );
+  const [favoritos, setFavoritos] =
+    useState<Record<number, boolean>>(
+      Object.fromEntries(
+        versiculos.map((v) => [
+          v.id,
+          v.isFavorite,
+        ]),
+      ),
+    );
 
-  const [anotacoes, setAnotacoes] = useState<Record<number, string>>(
-    Object.fromEntries(
-      versiculos
-        .filter((v) => v.noteContent)
-        .map((v) => [v.id, v.noteContent as string]),
-    ),
-  );
+  const [anotacoes, setAnotacoes] =
+    useState<Record<number, string>>(
+      Object.fromEntries(
+        versiculos
+          .filter((v) => v.noteContent)
+          .map((v) => [
+            v.id,
+            v.noteContent as string,
+          ]),
+      ),
+    );
 
-  const [carregandoFavorito, setCarregandoFavorito] = useState<
+  const [
+    carregandoFavorito,
+    setCarregandoFavorito,
+  ] = useState<
     Record<number, boolean>
   >({});
 
-  const [modalAberta, setModalAberta] = useState(false);
+  const [
+    modalAberta,
+    setModalAberta,
+  ] = useState(false);
 
-  const [versiculoAtualId, setVersiculoAtualId] =
-    useState<number | null>(null);
+  const [
+    versiculoAtualId,
+    setVersiculoAtualId,
+  ] = useState<number | null>(null);
 
-  const [textoAnotacao, setTextoAnotacao] = useState("");
+  const [
+    textoAnotacao,
+    setTextoAnotacao,
+  ] = useState("");
 
-  const [salvandoAnotacao, setSalvandoAnotacao] =
-    useState(false);
+  const [
+    salvandoAnotacao,
+    setSalvandoAnotacao,
+  ] = useState(false);
 
   const filtrados = useMemo(() => {
-    const s = q.trim().toLowerCase();
+    const s =
+      q.trim().toLowerCase();
 
-    if (!s) return versiculos;
+    if (!s) {
+      return versiculos;
+    }
 
-    const num = Number(s.replace(/[^\d]/g, ""));
+    const num = Number(
+      s.replace(/[^\d]/g, ""),
+    );
 
-    if (Number.isFinite(num) && num > 0) {
-      return versiculos.filter((v) => v.number === num);
+    if (
+      Number.isFinite(num) &&
+      num > 0
+    ) {
+      return versiculos.filter(
+        (v) => v.number === num,
+      );
     }
 
     return versiculos.filter((v) =>
-      v.text.toLowerCase().includes(s),
+      v.text
+        .toLowerCase()
+        .includes(s),
     );
   }, [q, versiculos]);
 
-  const versiculoAtual = useMemo(
-    () =>
-      versiculos.find((v) => v.id === versiculoAtualId) ??
-      null,
-    [versiculoAtualId, versiculos],
-  );
+  const versiculoAtual =
+    useMemo(
+      () =>
+        versiculos.find(
+          (v) =>
+            v.id ===
+            versiculoAtualId,
+        ) ?? null,
+      [
+        versiculoAtualId,
+        versiculos,
+      ],
+    );
 
   useEffect(() => {
-    const hash = window.location.hash;
+    const hash =
+      window.location.hash;
 
     if (hash.startsWith("#v-")) {
-      const numero = Number(hash.replace("#v-", ""));
+      const numero = Number(
+        hash.replace("#v-", ""),
+      );
 
-      if (Number.isFinite(numero) && numero > 0) {
+      if (
+        Number.isFinite(numero) &&
+        numero > 0
+      ) {
         setAtivo(numero);
 
         setTimeout(() => {
           document
-            .getElementById(`v-${numero}`)
+            .getElementById(
+              `v-${numero}`,
+            )
             ?.scrollIntoView({
               behavior: "smooth",
               block: "center",
@@ -106,52 +173,88 @@ export default function CapituloClient({
       }
     }
 
-    const el = document.getElementById(`v-${ativo}`);
-
-    el?.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
+    document
+      .getElementById(
+        `v-${ativo}`,
+      )
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function toggleFavorito(verseId: number) {
+  async function toggleFavorito(
+    verseId: number,
+  ) {
+    if (!canAddFavorites) {
+      return;
+    }
+
     try {
-      setCarregandoFavorito((prev) => ({
-        ...prev,
-        [verseId]: true,
-      }));
+      setCarregandoFavorito(
+        (prev) => ({
+          ...prev,
+          [verseId]: true,
+        }),
+      );
 
-      const res = await fetch("/api/favoritos/versiculos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        "/api/favoritos/versiculos",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            verseId,
+          }),
         },
-        body: JSON.stringify({ verseId }),
-      });
+      );
 
-      if (!res.ok) return;
+      if (!res.ok) {
+        return;
+      }
 
-      const data = (await res.json()) as {
-        isFavorite: boolean;
-      };
+      const data =
+        (await res.json()) as {
+          isFavorite: boolean;
+        };
 
       setFavoritos((prev) => ({
         ...prev,
-        [verseId]: data.isFavorite,
+        [verseId]:
+          data.isFavorite,
       }));
     } finally {
-      setCarregandoFavorito((prev) => ({
-        ...prev,
-        [verseId]: false,
-      }));
+      setCarregandoFavorito(
+        (prev) => ({
+          ...prev,
+          [verseId]: false,
+        }),
+      );
     }
   }
 
-  function abrirModalAnotacao(verseId: number) {
-    setVersiculoAtualId(verseId);
-    setTextoAnotacao(anotacoes[verseId] ?? "");
+  function abrirModalAnotacao(
+    verseId: number,
+  ) {
+    if (!canCreateNotes) {
+      return;
+    }
+
+    setVersiculoAtualId(
+      verseId,
+    );
+
+    setTextoAnotacao(
+      anotacoes[verseId] ?? "",
+    );
+
     setModalAberta(true);
   }
 
@@ -162,7 +265,12 @@ export default function CapituloClient({
   }
 
   async function salvarAnotacao() {
-    if (!versiculoAtualId) return;
+    if (
+      !versiculoAtualId ||
+      !canCreateNotes
+    ) {
+      return;
+    }
 
     try {
       setSalvandoAnotacao(true);
@@ -171,33 +279,53 @@ export default function CapituloClient({
         "/api/anotacoes/versiculos",
         {
           method: "POST",
+
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
+
           body: JSON.stringify({
-            verseId: versiculoAtualId,
-            content: textoAnotacao,
+            verseId:
+              versiculoAtualId,
+
+            content:
+              textoAnotacao,
           }),
         },
       );
 
       if (!res.ok) {
-        const text = await res.text();
-        console.error("Erro anotação:", text);
+        const text =
+          await res.text();
+
+        console.error(
+          "Erro anotação:",
+          text,
+        );
+
         return;
       }
 
-      const data = (await res.json()) as {
-        noteContent: string | null;
-      };
+      const data =
+        (await res.json()) as {
+          noteContent:
+          | string
+          | null;
+        };
 
       setAnotacoes((prev) => {
-        const next = { ...prev };
+        const next = {
+          ...prev,
+        };
 
         if (data.noteContent) {
-          next[versiculoAtualId] = data.noteContent;
+          next[versiculoAtualId] =
+            data.noteContent;
         } else {
-          delete next[versiculoAtualId];
+          delete next[
+            versiculoAtualId
+          ];
         }
 
         return next;
@@ -210,15 +338,21 @@ export default function CapituloClient({
         error,
       );
     } finally {
-      setSalvandoAnotacao(false);
+      setSalvandoAnotacao(
+        false,
+      );
     }
   }
 
-  function irParaVersiculo(numero: number) {
+  function irParaVersiculo(
+    numero: number,
+  ) {
     setAtivo(numero);
 
     document
-      .getElementById(`v-${numero}`)
+      .getElementById(
+        `v-${numero}`,
+      )
       ?.scrollIntoView({
         behavior: "smooth",
         block: "center",
@@ -226,61 +360,120 @@ export default function CapituloClient({
   }
 
   return (
-    <main className={styles.container}>
-      <div className={styles.topArea}>
+    <main
+      className={styles.container}
+    >
+      <div
+        className={styles.topArea}
+      >
         <Link
           href={`/livros/${slug}?v=${version}#top`}
           className={styles.backLink}
           aria-label="Voltar para capítulos"
         >
-          <span className={styles.backIcon}>←</span>
-          <span className={styles.backText}>
+          <span
+            className={styles.backIcon}
+          >
+            ←
+          </span>
+
+          <span
+            className={styles.backText}
+          >
             Voltar
           </span>
         </Link>
 
-        <div className={styles.pageHeading}>
-          <div className={styles.headingIcon}>
+        <div
+          className={
+            styles.pageHeading
+          }
+        >
+          <div
+            className={
+              styles.headingIcon
+            }
+          >
             📖
           </div>
 
-          <div className={styles.headingContent}>
-            <span className={styles.eyebrow}>
+          <div
+            className={
+              styles.headingContent
+            }
+          >
+            <span
+              className={
+                styles.eyebrow
+              }
+            >
               Leitura Bíblica
             </span>
 
-            <h1 className={styles.title}>
+            <h1
+              className={
+                styles.title
+              }
+            >
               {livro} {capitulo}
             </h1>
 
-            <p className={styles.subtitle}>
-              Leia, favorite e registre suas
-              anotações pessoais.
+            <p
+              className={
+                styles.subtitle
+              }
+            >
+              Leia, favorite e
+              registre suas anotações
+              pessoais.
             </p>
           </div>
 
-          <span className={styles.badge}>
-            {versiculos.length} versículos •{" "}
+          <span
+            className={styles.badge}
+          >
+            {versiculos.length}{" "}
+            versículos •{" "}
             {version.toUpperCase()}
           </span>
         </div>
       </div>
 
-      <div className={styles.readingTools}>
-        <div className={styles.searchBox}>
-          <span className={styles.searchIcon}>
+      <div
+        className={
+          styles.readingTools
+        }
+      >
+        <div
+          className={
+            styles.searchBox
+          }
+        >
+          <span
+            className={
+              styles.searchIcon
+            }
+          >
             🔎
           </span>
 
           <input
-            className={styles.search}
+            className={
+              styles.search
+            }
             placeholder="Buscar versículo por número ou texto..."
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            onChange={(e) =>
+              setQ(e.target.value)
+            }
           />
         </div>
 
-        <div className={styles.verseNav}>
+        <div
+          className={
+            styles.verseNav
+          }
+        >
           {filtrados.map((v) => (
             <button
               key={v.number}
@@ -290,7 +483,9 @@ export default function CapituloClient({
                   : ""
                 }`}
               onClick={() =>
-                irParaVersiculo(v.number)
+                irParaVersiculo(
+                  v.number,
+                )
               }
             >
               {v.number}
@@ -301,17 +496,22 @@ export default function CapituloClient({
 
       <ol className={styles.verses}>
         {filtrados.map((v) => {
-          const isFavorite = Boolean(
-            favoritos[v.id],
-          );
+          const isFavorite =
+            Boolean(
+              favoritos[v.id],
+            );
 
-          const isLoadingFavorite = Boolean(
-            carregandoFavorito[v.id],
-          );
+          const isLoadingFavorite =
+            Boolean(
+              carregandoFavorito[
+              v.id
+              ],
+            );
 
-          const temAnotacao = Boolean(
-            anotacoes[v.id],
-          );
+          const temAnotacao =
+            Boolean(
+              anotacoes[v.id],
+            );
 
           return (
             <li
@@ -325,10 +525,20 @@ export default function CapituloClient({
                   : ""
                 }`}
             >
-              <div className={styles.verseMain}>
-                <div className={styles.verseMeta}>
+              <div
+                className={
+                  styles.verseMain
+                }
+              >
+                <div
+                  className={
+                    styles.verseMeta
+                  }
+                >
                   <span
-                    className={styles.verseNumber}
+                    className={
+                      styles.verseNumber
+                    }
                   >
                     {v.number}
                   </span>
@@ -341,25 +551,31 @@ export default function CapituloClient({
                     <button
                       type="button"
                       onClick={() =>
-                        toggleFavorito(v.id)
+                        toggleFavorito(
+                          v.id,
+                        )
                       }
                       disabled={
-                        isLoadingFavorite
+                        isLoadingFavorite ||
+                        !canAddFavorites
                       }
-                      className={`${styles.favoriteBtn
-                        } ${isFavorite
+                      className={`${styles.favoriteBtn} ${isFavorite
                           ? styles.favoriteBtnActive
                           : ""
                         }`}
                       aria-label={
-                        isFavorite
-                          ? "Remover dos favoritos"
-                          : "Adicionar aos favoritos"
+                        !canAddFavorites
+                          ? "Favoritos não liberados para este usuário"
+                          : isFavorite
+                            ? "Remover dos favoritos"
+                            : "Adicionar aos favoritos"
                       }
                       title={
-                        isFavorite
-                          ? "Remover dos favoritos"
-                          : "Adicionar aos favoritos"
+                        !canAddFavorites
+                          ? "Favoritos não liberados"
+                          : isFavorite
+                            ? "Remover dos favoritos"
+                            : "Adicionar aos favoritos"
                       }
                     >
                       {isLoadingFavorite
@@ -372,22 +588,30 @@ export default function CapituloClient({
                     <button
                       type="button"
                       onClick={() =>
-                        abrirModalAnotacao(v.id)
+                        abrirModalAnotacao(
+                          v.id,
+                        )
                       }
-                      className={`${styles.noteBtn
-                        } ${temAnotacao
+                      disabled={
+                        !canCreateNotes
+                      }
+                      className={`${styles.noteBtn} ${temAnotacao
                           ? styles.noteBtnActive
                           : ""
                         }`}
                       aria-label={
-                        temAnotacao
-                          ? "Editar anotação"
-                          : "Anotar"
+                        !canCreateNotes
+                          ? "Anotações não liberadas para este usuário"
+                          : temAnotacao
+                            ? "Editar anotação"
+                            : "Anotar"
                       }
                       title={
-                        temAnotacao
-                          ? "Editar anotação"
-                          : "Anotar"
+                        !canCreateNotes
+                          ? "Anotações não liberadas"
+                          : temAnotacao
+                            ? "Editar anotação"
+                            : "Anotar"
                       }
                     >
                       📝
@@ -427,7 +651,11 @@ export default function CapituloClient({
                           styles.notePreviewText
                         }
                       >
-                        {anotacoes[v.id]}
+                        {
+                          anotacoes[
+                          v.id
+                          ]
+                        }
                       </div>
                     </div>
                   )}
@@ -440,109 +668,141 @@ export default function CapituloClient({
 
       {filtrados.length === 0 && (
         <p className={styles.empty}>
-          Nenhum versículo encontrado.
+          Nenhum versículo
+          encontrado.
         </p>
       )}
 
-      {modalAberta && versiculoAtual && (
-        <div
-          className={styles.modalOverlay}
-          onClick={fecharModalAnotacao}
-        >
+      {modalAberta &&
+        versiculoAtual &&
+        canCreateNotes && (
           <div
-            className={styles.modal}
-            onClick={(e) =>
-              e.stopPropagation()
+            className={
+              styles.modalOverlay
+            }
+            onClick={
+              fecharModalAnotacao
             }
           >
             <div
-              className={styles.modalHeader}
-            >
-              <span
-                className={
-                  styles.modalEyebrow
-                }
-              >
-                Anotação pessoal
-              </span>
-
-              <h2
-                className={styles.modalTitle}
-              >
-                {livro} {capitulo}:
-                {versiculoAtual.number}
-              </h2>
-            </div>
-
-            <div className={styles.modalVerse}>
-              “{versiculoAtual.text}”
-            </div>
-
-            <textarea
               className={
-                styles.modalTextarea
+                styles.modal
               }
-              placeholder="Escreva aqui sua reflexão, estudo, pregação ou algo que chamou sua atenção..."
-              value={textoAnotacao}
-              onChange={(e) =>
-                setTextoAnotacao(
-                  e.target.value,
-                )
+              onClick={(e) =>
+                e.stopPropagation()
               }
-              rows={6}
-            />
-
-            <div
-              className={styles.modalActions}
             >
-              <button
-                type="button"
+              <div
                 className={
-                  styles.modalSecondaryBtn
-                }
-                onClick={
-                  fecharModalAnotacao
-                }
-                disabled={
-                  salvandoAnotacao
+                  styles.modalHeader
                 }
               >
-                Cancelar
-              </button>
+                <span
+                  className={
+                    styles.modalEyebrow
+                  }
+                >
+                  Anotação pessoal
+                </span>
 
-              <button
-                type="button"
-                className={
-                  styles.modalSecondaryBtn
-                }
-                onClick={() =>
-                  setTextoAnotacao("")
-                }
-                disabled={
-                  salvandoAnotacao
-                }
-              >
-                Limpar
-              </button>
+                <h2
+                  className={
+                    styles.modalTitle
+                  }
+                >
+                  {livro}{" "}
+                  {capitulo}:
+                  {
+                    versiculoAtual.number
+                  }
+                </h2>
+              </div>
 
-              <button
-                type="button"
+              <div
                 className={
-                  styles.modalPrimaryBtn
-                }
-                onClick={salvarAnotacao}
-                disabled={
-                  salvandoAnotacao
+                  styles.modalVerse
                 }
               >
-                {salvandoAnotacao
-                  ? "Salvando..."
-                  : "Salvar anotação"}
-              </button>
+                “
+                {
+                  versiculoAtual.text
+                }
+                ”
+              </div>
+
+              <textarea
+                className={
+                  styles.modalTextarea
+                }
+                placeholder="Escreva aqui sua reflexão, estudo, pregação ou algo que chamou sua atenção..."
+                value={
+                  textoAnotacao
+                }
+                onChange={(e) =>
+                  setTextoAnotacao(
+                    e.target.value,
+                  )
+                }
+                rows={6}
+              />
+
+              <div
+                className={
+                  styles.modalActions
+                }
+              >
+                <button
+                  type="button"
+                  className={
+                    styles.modalSecondaryBtn
+                  }
+                  onClick={
+                    fecharModalAnotacao
+                  }
+                  disabled={
+                    salvandoAnotacao
+                  }
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="button"
+                  className={
+                    styles.modalSecondaryBtn
+                  }
+                  onClick={() =>
+                    setTextoAnotacao(
+                      "",
+                    )
+                  }
+                  disabled={
+                    salvandoAnotacao
+                  }
+                >
+                  Limpar
+                </button>
+
+                <button
+                  type="button"
+                  className={
+                    styles.modalPrimaryBtn
+                  }
+                  onClick={
+                    salvarAnotacao
+                  }
+                  disabled={
+                    salvandoAnotacao
+                  }
+                >
+                  {salvandoAnotacao
+                    ? "Salvando..."
+                    : "Salvar anotação"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </main>
   );
 }

@@ -1,3 +1,5 @@
+// app/page.tsx
+
 import Link from "next/link";
 import { prisma } from "../lib/prisma";
 import styles from "./styles.module.scss";
@@ -123,7 +125,8 @@ export default async function Home({
               </div>
             </section>
 
-            <PergunteBiblia version={version} />
+            <PergunteBiblia version={version} canUseAi={auth.permissions.use_ai === true}
+            />
 
             <section className={styles.quickSection}>
               <div className={styles.sectionTitle}>♛ <span>Acesso Rápido</span></div>

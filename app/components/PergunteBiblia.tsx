@@ -25,19 +25,25 @@ type ApiResult = {
   error?: string;
 };
 
+type PergunteBibliaProps = {
+  version: Version;
+  canUseAi: boolean;
+};
+
 export default function PergunteBiblia({
   version,
-}: {
-  version: Version;
-}) {
+  canUseAi,
+}: PergunteBibliaProps) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
   const [references, setReferences] = useState<Reference[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function submit(event: FormEvent) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!canUseAi) return;
 
     const trimmed = question.trim();
 
@@ -51,9 +57,11 @@ export default function PergunteBiblia({
     try {
       const response = await fetch("/api/biblia/ia", {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify({
           question: trimmed,
           version,
@@ -63,14 +71,20 @@ export default function PergunteBiblia({
       const data = (await response.json()) as ApiResult;
 
       if (!response.ok || !data.ok) {
-        setError(data.error || "Não foi possível responder agora.");
+        setError(
+          data.error ||
+          "Não foi possível responder agora.",
+        );
+
         return;
       }
 
       setAnswer(data.answer || null);
       setReferences(data.references || []);
     } catch {
-      setError("Não foi possível conectar à inteligência bíblica.");
+      setError(
+        "Não foi possível conectar à inteligência bíblica.",
+      );
     } finally {
       setLoading(false);
     }
@@ -88,10 +102,14 @@ export default function PergunteBiblia({
   return (
     <section className={styles.container}>
       <div className={styles.aiHeader}>
-        <div className={styles.aiIcon}>✦</div>
+        <div className={styles.aiIcon}>
+          ✦
+        </div>
 
         <div className={styles.aiTitle}>
-          <span className={styles.badge}>Pesquisa inteligente</span>
+          <span className={styles.badge}>
+            Pesquisa inteligente
+          </span>
 
           <h2>Pergunte à Bíblia</h2>
 
@@ -106,15 +124,27 @@ export default function PergunteBiblia({
         </div>
       </div>
 
+      {!canUseAi && (
+        <div className={styles.error}>
+          🔒 A Inteligência Bíblica não está liberada para este usuário.
+        </div>
+      )}
+
       <form onSubmit={submit} className={styles.form}>
         <textarea
           className={styles.input}
           value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          placeholder="Ex.: O que a Bíblia ensina sobre ansiedade e confiança em Deus?"
+          onChange={(event) =>
+            setQuestion(event.target.value)
+          }
+          placeholder={
+            canUseAi
+              ? "Ex.: O que a Bíblia ensina sobre ansiedade e confiança em Deus?"
+              : "Recurso não liberado para este usuário."
+          }
           maxLength={500}
           rows={3}
-          disabled={loading}
+          disabled={loading || !canUseAi}
           aria-label="Pergunte à Bíblia"
         />
 
@@ -126,9 +156,17 @@ export default function PergunteBiblia({
           <button
             type="submit"
             className={styles.button}
-            disabled={loading || question.trim().length < 3}
+            disabled={
+              !canUseAi ||
+              loading ||
+              question.trim().length < 3
+            }
           >
-            {loading ? "Pesquisando..." : "Perguntar →"}
+            {!canUseAi
+              ? "Acesso bloqueado"
+              : loading
+                ? "Pesquisando..."
+                : "Perguntar →"}
           </button>
         </div>
       </form>
@@ -146,7 +184,7 @@ export default function PergunteBiblia({
                 `O que a Bíblia ensina sobre ${item.toLowerCase()}?`,
               )
             }
-            disabled={loading}
+            disabled={loading || !canUseAi}
           >
             {item}
           </button>

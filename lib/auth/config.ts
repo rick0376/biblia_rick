@@ -1,3 +1,5 @@
+// lib/auth/config.ts
+
 export const BIBLE_AUTH_COOKIE = "biblia_access_token";
 
 export function getPanelApiUrl() {
