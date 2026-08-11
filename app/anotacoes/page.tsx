@@ -1,8 +1,11 @@
 //app/anotacoes/page.tsx
 
 import Link from "next/link";
+
 import { prisma } from "../../lib/prisma";
 import { requireBibleAuth } from "../../lib/auth/server";
+
+import styles from "./styles.module.scss";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,12 +14,19 @@ export default async function AnotacoesPage() {
   const auth = await requireBibleAuth();
 
   const anotacoes = await prisma.verseNote.findMany({
-    where: { userId: auth.user.id },
-    orderBy: { updatedAt: "desc" },
+    where: {
+      userId: auth.user.id,
+    },
+
+    orderBy: {
+      updatedAt: "desc",
+    },
+
     include: {
       verse: {
         include: {
           translation: true,
+
           chapter: {
             include: {
               book: true,
@@ -28,142 +38,191 @@ export default async function AnotacoesPage() {
   });
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        padding: "32px 20px",
-        background: "var(--page-background)",
-        color: "var(--text-primary)",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1100,
-          margin: "0 auto",
-        }}
-      >
+    <main className={styles.container}>
+      <div className={styles.topArea}>
         <Link
           href="/"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            marginBottom: 20,
-            color: "var(--accent-text)",
-            textDecoration: "none",
-            fontWeight: 700,
-          }}
+          className={styles.backLink}
         >
-          ← Voltar
+          <span className={styles.backIcon}>
+            ←
+          </span>
+
+          <span className={styles.backText}>
+            Voltar
+          </span>
         </Link>
 
-        <h1
-          style={{
-            fontSize: 42,
-            marginBottom: 8,
-            background: "var(--accent-gradient)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            color: "transparent",
-          }}
-        >
-          Anotações
-        </h1>
+        <section className={styles.pageHeading}>
+          <div className={styles.headingIcon}>
+            📝
+          </div>
 
-        <p
-          style={{
-            color: "var(--text-secondary)",
-            marginBottom: 28,
-          }}
-        >
-          Seus versículos anotados.
-        </p>
+          <div className={styles.headingContent}>
+            <span className={styles.eyebrow}>
+              Estudos pessoais
+            </span>
+
+            <h1 className={styles.title}>
+              Anotações
+            </h1>
+
+            <p className={styles.subtitle}>
+              Consulte suas reflexões e estudos
+              registrados durante a leitura bíblica.
+            </p>
+          </div>
+
+          <div className={styles.headingStats}>
+            <div>
+              <strong>
+                {anotacoes.length}
+              </strong>
+
+              <span>Anotações</span>
+            </div>
+          </div>
+
+          <div className={styles.notesBadge}>
+            <span>📝</span>
+            Estudos
+          </div>
+        </section>
+      </div>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <div>
+            <span className={styles.sectionEyebrow}>
+              Suas reflexões
+            </span>
+
+            <h2 className={styles.sectionTitle}>
+              Versículos anotados
+            </h2>
+          </div>
+
+          <span className={styles.sectionCount}>
+            {anotacoes.length}
+          </span>
+        </div>
 
         {anotacoes.length === 0 ? (
-          <p style={{ color: "var(--text-secondary)" }}>
-            Nenhuma anotação ainda.
-          </p>
+          <div className={styles.empty}>
+            <span className={styles.emptyIcon}>
+              📝
+            </span>
+
+            <div>
+              <strong>
+                Nenhuma anotação ainda
+              </strong>
+
+              <p>
+                As anotações criadas durante a
+                leitura aparecerão aqui.
+              </p>
+            </div>
+          </div>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gap: 14,
-            }}
-          >
+          <div className={styles.grid}>
             {anotacoes.map((item) => {
               const verse = item.verse;
               const chapter = verse.chapter;
               const book = chapter.book;
+              const version =
+                verse.translation.code;
 
               return (
                 <Link
                   key={item.id}
-                  href={`/livros/${book.slug}/${chapter.number}?v=${verse.translation.code}#v-${verse.number}`}
-                  style={{
-                    textDecoration: "none",
-                    color: "inherit",
-                    border: "1px solid var(--surface-border)",
-                    borderRadius: 18,
-                    padding: 18,
-                    background: "var(--surface-1)",
-                    borderLeft: "6px solid rgba(245, 158, 11, 0.42)",
-                  }}
+                  href={`/livros/${book.slug}/${chapter.number}?v=${version}#v-${verse.number}`}
+                  className={styles.card}
                 >
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      marginBottom: 10,
-                      color: "var(--accent-text)",
-                    }}
-                  >
-                    {book.name} {chapter.number}:{verse.number} •{" "}
-                    {verse.translation.code.toUpperCase()}
-                  </div>
-
-                  <div
-                    style={{
-                      marginBottom: 14,
-                      lineHeight: 1.7,
-                    }}
-                  >
-                    {verse.text}
-                  </div>
-
-                  <div
-                    style={{
-                      border: "1px solid var(--accent-soft-border)",
-                      background: "rgba(245, 158, 11, 0.08)",
-                      borderRadius: 14,
-                      padding: 14,
-                    }}
-                  >
+                  <div className={styles.cardTop}>
                     <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 800,
-                        color: "var(--accent-text)",
-                        marginBottom: 6,
-                      }}
+                      className={
+                        styles.cardReference
+                      }
                     >
-                      Anotação
+                      <span
+                        className={
+                          styles.cardIcon
+                        }
+                      >
+                        📖
+                      </span>
+
+                      <div>
+                        <strong>
+                          {book.name}{" "}
+                          {chapter.number}:
+                          {verse.number}
+                        </strong>
+
+                        <small>
+                          Versículo anotado
+                        </small>
+                      </div>
+                    </div>
+
+                    <span
+                      className={
+                        styles.versionBadge
+                      }
+                    >
+                      {version.toUpperCase()}
+                    </span>
+                  </div>
+
+                  <p className={styles.verseText}>
+                    {verse.text}
+                  </p>
+
+                  <div className={styles.noteBox}>
+                    <div
+                      className={
+                        styles.noteHeader
+                      }
+                    >
+                      <span
+                        className={
+                          styles.noteIcon
+                        }
+                      >
+                        📝
+                      </span>
+
+                      <strong>
+                        Sua anotação
+                      </strong>
                     </div>
 
                     <div
-                      style={{
-                        color: "var(--text-primary)",
-                        whiteSpace: "pre-wrap",
-                        lineHeight: 1.6,
-                      }}
+                      className={
+                        styles.noteText
+                      }
                     >
                       {item.content}
                     </div>
+                  </div>
+
+                  <div className={styles.cardFooter}>
+                    <span>
+                      Clique para voltar ao
+                      versículo
+                    </span>
+
+                    <strong>
+                      Abrir passagem →
+                    </strong>
                   </div>
                 </Link>
               );
             })}
           </div>
         )}
-      </div>
+      </section>
     </main>
   );
 }

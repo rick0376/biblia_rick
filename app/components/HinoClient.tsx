@@ -69,9 +69,7 @@ export default function HinoClient({
           isFavorite: boolean;
         };
 
-      setFavorito(
-        data.isFavorite,
-      );
+      setFavorito(data.isFavorite);
     } finally {
       setCarregando(false);
     }
@@ -79,26 +77,21 @@ export default function HinoClient({
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          justifyContent:
-            "space-between",
-          alignItems: "center",
-          gap: "12px",
-          marginBottom: "20px",
-          flexWrap: "wrap",
-        }}
-      >
-        <div
-          style={{
-            color:
-              "var(--text-secondary)",
-            fontWeight: 700,
-          }}
-        >
-          Hino {hymnNumber} •{" "}
-          {hymnTitle}
+      <section className={styles.actionBar}>
+        <div className={styles.actionInfo}>
+          <span className={styles.actionIcon}>
+            {favorito ? "★" : "♫"}
+          </span>
+
+          <div>
+            <strong>
+              Hino {hymnNumber}
+            </strong>
+
+            <span>
+              {hymnTitle}
+            </span>
+          </div>
         </div>
 
         <button
@@ -108,92 +101,89 @@ export default function HinoClient({
             carregando ||
             !canAddFavorites
           }
+          className={`${styles.favoriteButton} ${favorito
+              ? styles.favoriteButtonActive
+              : ""
+            }`}
           title={
-            canAddFavorites
-              ? favorito
+            !canAddFavorites
+              ? "Favoritos não liberados para este usuário"
+              : favorito
                 ? "Remover dos favoritos"
                 : "Adicionar aos favoritos"
-              : "Favoritos não liberados para este usuário"
           }
-          style={{
-            border:
-              "1px solid var(--accent-soft-border)",
-
-            background: favorito
-              ? "var(--accent-gradient-2)"
-              : "var(--surface-2)",
-
-            color: favorito
-              ? "var(--accent-strong-text)"
-              : "var(--accent-text)",
-
-            borderRadius:
-              "999px",
-
-            padding:
-              "8px 14px",
-
-            cursor:
-              canAddFavorites
-                ? "pointer"
-                : "not-allowed",
-
-            fontWeight: 700,
-
-            opacity:
-              canAddFavorites
-                ? 1
-                : 0.5,
-          }}
         >
           {!canAddFavorites
             ? "🔒 Favoritos bloqueados"
             : carregando
-              ? "..."
+              ? "Salvando..."
               : favorito
                 ? "★ Hino favorito"
                 : "☆ Favoritar hino"}
         </button>
-      </div>
+      </section>
 
       <ol className={styles.list}>
-        {verses.map((v) => (
+        {verses.map((verse) => (
           <li
-            key={v.id}
-            className={styles.card}
+            key={verse.id}
+            className={`${styles.card} ${verse.type === "CHORUS"
+                ? styles.chorusCard
+                : ""
+              }`}
           >
-            {v.type === "VERSE" && (
+            {verse.type === "VERSE" && (
               <>
                 <div
                   className={
-                    styles.badge
+                    styles.verseHeader
                   }
                 >
-                  Estrofe {v.number}
+                  <span
+                    className={styles.badge}
+                  >
+                    Estrofe {verse.number}
+                  </span>
+
+                  <span
+                    className={
+                      styles.verseDecoration
+                    }
+                  >
+                    ♪
+                  </span>
                 </div>
 
-                <pre
-                  className={
-                    styles.text
-                  }
-                >
-                  {v.text}
+                <pre className={styles.text}>
+                  {verse.text}
                 </pre>
               </>
             )}
 
-            {v.type === "CHORUS" && (
+            {verse.type === "CHORUS" && (
               <div
-                className={
-                  styles.chorusBox
-                }
+                className={styles.chorusBox}
               >
                 <div
                   className={
-                    styles.chorusBadge
+                    styles.chorusHeader
                   }
                 >
-                  Coro
+                  <span
+                    className={
+                      styles.chorusBadge
+                    }
+                  >
+                    ♫ Coro
+                  </span>
+
+                  <span
+                    className={
+                      styles.chorusDecoration
+                    }
+                  >
+                    ♪
+                  </span>
                 </div>
 
                 <pre
@@ -201,7 +191,7 @@ export default function HinoClient({
                     styles.chorusText
                   }
                 >
-                  {v.text}
+                  {verse.text}
                 </pre>
               </div>
             )}

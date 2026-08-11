@@ -2,18 +2,21 @@
 
 import { prisma } from "../../../../lib/prisma";
 import { requireBibleAuth } from "../../../../lib/auth/server";
+
 import CapituloClient from "../../../components/CapituloClient";
 
 type Version = "acf" | "ara" | "nvi" | "kja";
 
 function normalizeVersion(v?: string): Version {
+  const value = (v ?? "").toLowerCase();
+
   if (
-    v === "acf" ||
-    v === "ara" ||
-    v === "nvi" ||
-    v === "kja"
+    value === "acf" ||
+    value === "ara" ||
+    value === "nvi" ||
+    value === "kja"
   ) {
-    return v;
+    return value;
   }
 
   return "acf";
@@ -132,14 +135,14 @@ export default async function CapituloPage({
       canCreateNotes={
         auth.permissions.create_notes === true
       }
-      versiculos={chapter.verses.map((vv) => ({
-        id: vv.id,
-        number: vv.number,
-        text: vv.text,
+      versiculos={chapter.verses.map((verse) => ({
+        id: verse.id,
+        number: verse.number,
+        text: verse.text,
         isFavorite:
-          vv.favorites.length > 0,
+          verse.favorites.length > 0,
         noteContent:
-          vv.notes[0]?.content ?? null,
+          verse.notes[0]?.content ?? null,
       }))}
     />
   );

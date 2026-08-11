@@ -3,7 +3,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import styles from "./PergunteBiblia.module.scss";
 
 type Version = "acf" | "ara" | "nvi" | "kja";
@@ -30,6 +30,17 @@ type PergunteBibliaProps = {
   canUseAi: boolean;
 };
 
+const DEFAULT_SUGGESTIONS = [
+  "Ansiedade",
+  "Fé",
+  "Amor",
+  "Perdão",
+  "Salvação",
+  "Esperança",
+];
+
+const STORAGE_KEY = "pergunte_biblia_suggestions";
+
 export default function PergunteBiblia({
   version,
   canUseAi,
@@ -39,6 +50,66 @@ export default function PergunteBiblia({
   const [references, setReferences] = useState<Reference[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>(
+    DEFAULT_SUGGESTIONS,
+  );
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+
+      if (!saved) return;
+
+      const parsed = JSON.parse(saved);
+
+      if (
+        Array.isArray(parsed) &&
+        parsed.every((item) => typeof item === "string")
+      ) {
+        setSuggestions(parsed);
+      }
+    } catch {
+      // ignora erro de leitura
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(suggestions),
+      );
+    } catch {
+      // ignora erro de gravação
+    }
+  }, [suggestions]);
+
+  function clearResult() {
+    setAnswer(null);
+    setReferences([]);
+    setError(null);
+  }
+
+  function clearAll() {
+    setQuestion("");
+    clearResult();
+  }
+
+  function removeSuggestion(item: string) {
+    setSuggestions((current) =>
+      current.filter((suggestion) => suggestion !== item),
+    );
+  }
+
+  function restoreSuggestions() {
+    setSuggestions(DEFAULT_SUGGESTIONS);
+  }
+
+  function fillSuggestion(item: string) {
+    setQuestion(
+      `O que a Bíblia ensina sobre ${item.toLowerCase()}?`,
+    );
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -57,11 +128,9 @@ export default function PergunteBiblia({
     try {
       const response = await fetch("/api/biblia/ia", {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify({
           question: trimmed,
           version,
@@ -75,7 +144,6 @@ export default function PergunteBiblia({
           data.error ||
           "Não foi possível responder agora.",
         );
-
         return;
       }
 
@@ -90,21 +158,13 @@ export default function PergunteBiblia({
     }
   }
 
-  const suggestions = [
-    "Ansiedade",
-    "Fé",
-    "Amor",
-    "Perdão",
-    "Salvação",
-    "Esperança",
-  ];
+  const showRestoreButton =
+    suggestions.length < DEFAULT_SUGGESTIONS.length;
 
   return (
     <section className={styles.container}>
       <div className={styles.aiHeader}>
-        <div className={styles.aiIcon}>
-          ✦
-        </div>
+        <div className={styles.aiIcon}>✦</div>
 
         <div className={styles.aiTitle}>
           <span className={styles.badge}>
@@ -114,8 +174,9 @@ export default function PergunteBiblia({
           <h2>Pergunte à Bíblia</h2>
 
           <p>
-            Faça uma pergunta e encontre uma resposta acompanhada dos
-            versículos relacionados na versão {version.toUpperCase()}.
+            Faça uma pergunta e encontre uma resposta
+            acompanhada dos versículos relacionados na versão{" "}
+            {version.toUpperCase()}.
           </p>
         </div>
 
@@ -126,7 +187,8 @@ export default function PergunteBiblia({
 
       {!canUseAi && (
         <div className={styles.error}>
-          🔒 A Inteligência Bíblica não está liberada para este usuário.
+          🔒 A Inteligência Bíblica não está liberada para
+          este usuário.
         </div>
       )}
 
@@ -153,21 +215,34 @@ export default function PergunteBiblia({
             {question.length}/500
           </span>
 
-          <button
-            type="submit"
-            className={styles.button}
-            disabled={
-              !canUseAi ||
-              loading ||
-              question.trim().length < 3
-            }
-          >
-            {!canUseAi
-              ? "Acesso bloqueado"
-              : loading
-                ? "Pesquisando..."
-                : "Perguntar →"}
-          </button>
+          <div className={styles.formActions}>
+            {(question || answer || error || references.length > 0) && (
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={clearAll}
+                disabled={loading}
+              >
+                Limpar
+              </button>
+            )}
+
+            <button
+              type="submit"
+              className={styles.button}
+              disabled={
+                !canUseAi ||
+                loading ||
+                question.trim().length < 3
+              }
+            >
+              {!canUseAi
+                ? "Acesso bloqueado"
+                : loading
+                  ? "Pesquisando..."
+                  : "Perguntar →"}
+            </button>
+          </div>
         </div>
       </form>
 
@@ -176,25 +251,47 @@ export default function PergunteBiblia({
         aria-label="Sugestões de pesquisa"
       >
         {suggestions.map((item) => (
-          <button
+          <div
             key={item}
-            type="button"
-            onClick={() =>
-              setQuestion(
-                `O que a Bíblia ensina sobre ${item.toLowerCase()}?`,
-              )
-            }
-            disabled={loading || !canUseAi}
+            className={styles.suggestionItem}
           >
-            {item}
-          </button>
+            <button
+              type="button"
+              className={styles.suggestionButton}
+              onClick={() => fillSuggestion(item)}
+              disabled={loading || !canUseAi}
+              title={`Usar sugestão ${item}`}
+            >
+              {item}
+            </button>
+
+            <button
+              type="button"
+              className={styles.removeSuggestionButton}
+              onClick={() => removeSuggestion(item)}
+              disabled={loading}
+              aria-label={`Excluir sugestão ${item}`}
+              title={`Excluir sugestão ${item}`}
+            >
+              ×
+            </button>
+          </div>
         ))}
+
+        {showRestoreButton && (
+          <button
+            type="button"
+            className={styles.restoreButton}
+            onClick={restoreSuggestions}
+            disabled={loading}
+          >
+            Restaurar sugestões
+          </button>
+        )}
       </div>
 
       {error && (
-        <div className={styles.error}>
-          ⚠️ {error}
-        </div>
+        <div className={styles.error}>⚠️ {error}</div>
       )}
 
       {answer && (
@@ -202,14 +299,22 @@ export default function PergunteBiblia({
           <div className={styles.answerHeader}>
             <span>📜 Resposta</span>
 
-            <span className={styles.answerVersion}>
-              {version.toUpperCase()}
-            </span>
+            <div className={styles.answerHeaderRight}>
+              <button
+                type="button"
+                className={styles.clearResultButton}
+                onClick={clearResult}
+              >
+                Limpar resposta
+              </button>
+
+              <span className={styles.answerVersion}>
+                {version.toUpperCase()}
+              </span>
+            </div>
           </div>
 
-          <div className={styles.answer}>
-            {answer}
-          </div>
+          <div className={styles.answer}>{answer}</div>
 
           {references.length > 0 && (
             <div className={styles.references}>

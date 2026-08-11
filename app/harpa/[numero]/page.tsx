@@ -63,26 +63,74 @@ export default async function HinoPage({
     return <h1>Hino não encontrado</h1>;
   }
 
+  const totalEstrofes = hino.verses.filter(
+    (verse) => verse.type === "VERSE",
+  ).length;
+
+  const totalCoros = hino.verses.filter(
+    (verse) => verse.type === "CHORUS",
+  ).length;
+
   return (
     <main className={styles.container}>
-      <header className={styles.header}>
+      <div className={styles.topArea}>
         <Link
           href="/harpa"
           className={styles.backLink}
+          aria-label="Voltar para Harpa Cristã"
         >
-          ←
+          <span className={styles.backIcon}>
+            ←
+          </span>
+
+          <span className={styles.backText}>
+            Voltar
+          </span>
         </Link>
 
-        <div>
-          <h1 className={styles.title}>
-            {hino.number}. {hino.title}
-          </h1>
+        <section className={styles.pageHeading}>
+          <div className={styles.headingIcon}>
+            🎵
+          </div>
 
-          <p className={styles.subtitle}>
-            {hino.verses.length} estrofes
-          </p>
-        </div>
-      </header>
+          <div className={styles.headingContent}>
+            <span className={styles.eyebrow}>
+              Harpa Cristã
+            </span>
+
+            <h1 className={styles.title}>
+              {hino.number}. {hino.title}
+            </h1>
+
+            <p className={styles.subtitle}>
+              Acompanhe a letra completa deste hino,
+              suas estrofes e coro.
+            </p>
+          </div>
+
+          <div className={styles.headingStats}>
+            <div>
+              <strong>{hino.number}</strong>
+              <span>Hino</span>
+            </div>
+
+            <div>
+              <strong>{totalEstrofes}</strong>
+              <span>Estrofes</span>
+            </div>
+
+            <div>
+              <strong>{totalCoros}</strong>
+              <span>Coros</span>
+            </div>
+          </div>
+
+          <div className={styles.harpaBadge}>
+            <span>🎶</span>
+            Harpa
+          </div>
+        </section>
+      </div>
 
       <HinoClient
         hymnId={hino.id}

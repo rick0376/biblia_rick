@@ -1,0 +1,972 @@
+// app/anotacoes/styles.module.scss
+
+.container {
+    width: 100%;
+    min-height: 100vh;
+
+    padding: 26px 28px 56px;
+
+    background:
+        radial-gradient(900px 500px at 0% 0%,
+            rgba(245, 158, 11, 0.055),
+            transparent 60%),
+        radial-gradient(900px 520px at 100% 10%,
+            rgba(37, 99, 235, 0.07),
+            transparent 58%),
+        var(--page-background);
+}
+
+/* =========================================================
+   TOPO
+========================================================= */
+
+.topArea {
+    margin-bottom: 32px;
+}
+
+.backLink {
+    margin-bottom: 18px;
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 11px;
+
+    text-decoration: none;
+}
+
+.backIcon {
+    width: 44px;
+    height: 44px;
+
+    display: grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    border:
+        1px solid rgba(245, 158, 11, 0.35);
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(135deg,
+            #ffd66b,
+            #f5a623);
+
+    color: #181004;
+
+    font-size: 19px;
+    font-weight: 950;
+
+    box-shadow:
+        0 9px 24px rgba(245, 158, 11, 0.16);
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.backText {
+    color: #f4c765;
+
+    font-size: 15px;
+    font-weight: 950;
+
+    transition: color 0.18s ease;
+}
+
+.backLink:hover .backIcon {
+    transform: translateX(-3px);
+}
+
+.backLink:hover .backText {
+    color: #ffdc85;
+}
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.pageHeading {
+    position: relative;
+
+    min-height: 180px;
+
+    padding: 28px 30px;
+
+    display: grid;
+
+    grid-template-columns:
+        auto minmax(0, 1fr) auto;
+
+    align-items: center;
+
+    gap: 22px;
+
+    overflow: hidden;
+
+    border:
+        1px solid rgba(148, 163, 184, 0.16);
+
+    border-radius: 24px;
+
+    background:
+        radial-gradient(circle at 0% 0%,
+            rgba(245, 158, 11, 0.12),
+            transparent 35%),
+        radial-gradient(circle at 100% 100%,
+            rgba(37, 99, 235, 0.12),
+            transparent 43%),
+        linear-gradient(135deg,
+            #0d1727,
+            #081322);
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.18);
+
+    &::before {
+        content: "";
+
+        position: absolute;
+
+        width: 390px;
+        height: 390px;
+
+        right: -180px;
+        top: -235px;
+
+        border-radius: 50%;
+
+        background:
+            rgba(245, 158, 11, 0.08);
+
+        filter: blur(28px);
+    }
+}
+
+.headingIcon {
+    width: 70px;
+    height: 70px;
+
+    display: grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    border:
+        1px solid rgba(245, 158, 11, 0.28);
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(145deg,
+            rgba(245, 158, 11, 0.15),
+            rgba(245, 158, 11, 0.035));
+
+    font-size: 27px;
+}
+
+.headingContent {
+    min-width: 0;
+}
+
+.eyebrow {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #f3bb47;
+
+    font-size: 10px;
+    font-weight: 950;
+
+    letter-spacing: 0.14em;
+
+    text-transform: uppercase;
+}
+
+.title {
+    margin: 0;
+
+    color: #f6c65b;
+
+    font-size:
+        clamp(34px, 4vw, 50px);
+
+    line-height: 1.05;
+
+    font-weight: 950;
+
+    letter-spacing: -0.045em;
+}
+
+.subtitle {
+    max-width: 650px;
+
+    margin: 11px 0 0;
+
+    color: #a5b1c2;
+
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+/* =========================================================
+   CONTADOR
+========================================================= */
+
+.headingStats {
+    display: flex;
+
+    >div {
+        min-width: 100px;
+        min-height: 76px;
+
+        padding: 10px 12px;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        border:
+            1px solid rgba(148, 163, 184, 0.15);
+
+        border-radius: 15px;
+
+        background:
+            rgba(3, 11, 23, 0.58);
+
+        text-align: center;
+    }
+
+    strong {
+        color: #ffffff;
+
+        font-size: 22px;
+        line-height: 1;
+
+        font-weight: 950;
+    }
+
+    span {
+        margin-top: 7px;
+
+        color: #8391a7;
+
+        font-size: 8px;
+        font-weight: 900;
+
+        text-transform: uppercase;
+    }
+}
+
+.notesBadge {
+    position: absolute;
+
+    right: 24px;
+    top: 18px;
+
+    min-height: 34px;
+
+    padding: 0 13px;
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 6px;
+
+    border:
+        1px solid rgba(245, 158, 11, 0.34);
+
+    border-radius: 999px;
+
+    background:
+        rgba(245, 158, 11, 0.1);
+
+    color: #f5c35e;
+
+    font-size: 11px;
+    font-weight: 950;
+}
+
+/* =========================================================
+   SEÇÃO
+========================================================= */
+
+.section {
+    margin-bottom: 40px;
+}
+
+.sectionHeader {
+    position: relative;
+
+    min-height: 58px;
+
+    margin-bottom: 16px;
+
+    padding: 0 5px 13px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    border-bottom:
+        1px solid rgba(245, 158, 11, 0.2);
+
+    &::after {
+        content: "";
+
+        position: absolute;
+
+        left: 0;
+        bottom: -1px;
+
+        width: 92px;
+        height: 2px;
+
+        border-radius: 999px;
+
+        background:
+            linear-gradient(90deg,
+                #f5b301,
+                transparent);
+    }
+}
+
+.sectionEyebrow {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #c89533;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    letter-spacing: 0.12em;
+
+    text-transform: uppercase;
+}
+
+.sectionTitle {
+    margin: 0;
+
+    color: #f4ca6b;
+
+    font-size: 22px;
+    font-weight: 950;
+}
+
+.sectionCount {
+    min-width: 42px;
+    height: 31px;
+
+    padding: 0 11px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid rgba(245, 158, 11, 0.27);
+
+    border-radius: 999px;
+
+    background:
+        rgba(245, 158, 11, 0.08);
+
+    color: #f4c76b;
+
+    font-size: 12px;
+    font-weight: 950;
+}
+
+/* =========================================================
+   LISTA
+========================================================= */
+
+.grid {
+    display: grid;
+
+    gap: 14px;
+}
+
+.card {
+    position: relative;
+
+    padding: 19px 20px;
+
+    overflow: hidden;
+
+    border:
+        1px solid rgba(148, 163, 184, 0.15);
+
+    border-radius: 19px;
+
+    background:
+        linear-gradient(145deg,
+            #111e30,
+            #0c1727);
+
+    color: inherit;
+
+    text-decoration: none;
+
+    box-shadow:
+        0 8px 28px rgba(0, 0, 0, 0.09);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+
+    &::before {
+        content: "";
+
+        position: absolute;
+
+        left: 0;
+        top: 18px;
+        bottom: 18px;
+
+        width: 3px;
+
+        border-radius: 999px;
+
+        background:
+            linear-gradient(180deg,
+                #ffd66b,
+                #f5a623);
+    }
+
+    &:hover {
+        transform: translateY(-3px);
+
+        border-color:
+            rgba(245, 158, 11, 0.35);
+
+        box-shadow:
+            0 15px 34px rgba(0, 0, 0, 0.14);
+    }
+}
+
+/* =========================================================
+   REFERÊNCIA
+========================================================= */
+
+.cardTop {
+    margin-bottom: 14px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 14px;
+}
+
+.cardReference {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    strong {
+        display: block;
+
+        color: #f4ca6b;
+
+        font-size: 14px;
+        font-weight: 950;
+    }
+
+    small {
+        display: block;
+
+        margin-top: 4px;
+
+        color: #748399;
+
+        font-size: 10px;
+    }
+}
+
+.cardIcon {
+    width: 38px;
+    height: 38px;
+
+    display: grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    border:
+        1px solid rgba(245, 158, 11, 0.2);
+
+    border-radius: 11px;
+
+    background:
+        rgba(245, 158, 11, 0.06);
+
+    font-size: 15px;
+}
+
+.versionBadge {
+    min-height: 29px;
+
+    padding: 0 10px;
+
+    display: inline-flex;
+    align-items: center;
+
+    flex-shrink: 0;
+
+    border:
+        1px solid rgba(245, 158, 11, 0.25);
+
+    border-radius: 999px;
+
+    background:
+        rgba(245, 158, 11, 0.07);
+
+    color: #eebc57;
+
+    font-size: 10px;
+    font-weight: 950;
+}
+
+/* =========================================================
+   TEXTO BÍBLICO
+========================================================= */
+
+.verseText {
+    margin: 0 0 16px;
+
+    color: #edf2f7;
+
+    font-size: 14px;
+
+    line-height: 1.75;
+}
+
+/* =========================================================
+   ANOTAÇÃO
+========================================================= */
+
+.noteBox {
+    padding: 15px 16px;
+
+    border:
+        1px solid rgba(245, 158, 11, 0.22);
+
+    border-radius: 15px;
+
+    background:
+        radial-gradient(500px 180px at 0% 0%,
+            rgba(245, 158, 11, 0.08),
+            transparent 60%),
+        rgba(245, 158, 11, 0.045);
+}
+
+.noteHeader {
+    margin-bottom: 9px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    strong {
+        color: #f1c361;
+
+        font-size: 11px;
+        font-weight: 950;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.04em;
+    }
+}
+
+.noteIcon {
+    font-size: 14px;
+}
+
+.noteText {
+    color: #e8edf4;
+
+    font-size: 13px;
+
+    line-height: 1.65;
+
+    white-space: pre-wrap;
+}
+
+/* =========================================================
+   RODAPÉ DO CARD
+========================================================= */
+
+.cardFooter {
+    margin-top: 14px;
+    padding-top: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    border-top:
+        1px solid rgba(148, 163, 184, 0.1);
+
+    span {
+        color: #748297;
+
+        font-size: 10px;
+    }
+
+    strong {
+        color: #eabb5b;
+
+        font-size: 10px;
+        font-weight: 900;
+    }
+}
+
+/* =========================================================
+   VAZIO
+========================================================= */
+
+.empty {
+    min-height: 120px;
+
+    padding: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 14px;
+
+    border:
+        1px dashed rgba(148, 163, 184, 0.2);
+
+    border-radius: 18px;
+
+    background:
+        rgba(255, 255, 255, 0.015);
+}
+
+.emptyIcon {
+    width: 46px;
+    height: 46px;
+
+    display: grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    border:
+        1px solid rgba(245, 158, 11, 0.2);
+
+    border-radius: 13px;
+
+    background:
+        rgba(245, 158, 11, 0.06);
+
+    font-size: 19px;
+}
+
+.empty strong {
+    color: #e7edf5;
+
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.empty p {
+    margin: 4px 0 0;
+
+    color: #758398;
+
+    font-size: 11px;
+}
+
+/* =========================================================
+   TEMA CLARO
+========================================================= */
+
+:global(html[data-theme="light"]) .container {
+    background:
+        radial-gradient(850px 460px at 0% 0%,
+            rgba(245, 158, 11, 0.04),
+            transparent 58%),
+        radial-gradient(900px 500px at 100% 10%,
+            rgba(37, 99, 235, 0.035),
+            transparent 60%),
+        linear-gradient(180deg,
+            #f7f9fc 0%,
+            #edf2f7 100%);
+}
+
+:global(html[data-theme="light"]) .backText {
+    color: #955900;
+}
+
+:global(html[data-theme="light"]) .pageHeading {
+    border-color:
+        rgba(51, 65, 85, 0.13);
+
+    background:
+        radial-gradient(circle at 0% 0%,
+            rgba(245, 158, 11, 0.065),
+            transparent 36%),
+        linear-gradient(135deg,
+            #ffffff,
+            #f3f6fa);
+
+    box-shadow:
+        0 16px 38px rgba(15, 23, 42, 0.075);
+}
+
+:global(html[data-theme="light"]) .headingIcon {
+    border-color:
+        rgba(181, 120, 15, 0.24);
+
+    background:
+        rgba(245, 158, 11, 0.08);
+}
+
+:global(html[data-theme="light"]) .eyebrow {
+    color: #9b5d00;
+}
+
+:global(html[data-theme="light"]) .title {
+    color: #965900;
+}
+
+:global(html[data-theme="light"]) .subtitle {
+    color: #536176;
+}
+
+:global(html[data-theme="light"]) .headingStats>div {
+    border-color:
+        rgba(51, 65, 85, 0.13);
+
+    background: #ffffff;
+}
+
+:global(html[data-theme="light"]) .headingStats strong {
+    color: #172033;
+}
+
+:global(html[data-theme="light"]) .headingStats span {
+    color: #64748b;
+}
+
+:global(html[data-theme="light"]) .notesBadge {
+    color: #945800;
+
+    background:
+        rgba(245, 158, 11, 0.1);
+}
+
+:global(html[data-theme="light"]) .sectionTitle {
+    color: #875100;
+}
+
+:global(html[data-theme="light"]) .sectionEyebrow {
+    color: #9d650a;
+}
+
+:global(html[data-theme="light"]) .sectionCount {
+    color: #925700;
+}
+
+:global(html[data-theme="light"]) .card {
+    border-color:
+        rgba(51, 65, 85, 0.13);
+
+    background:
+        linear-gradient(145deg,
+            #ffffff,
+            #f4f7fa);
+
+    box-shadow:
+        0 7px 22px rgba(15, 23, 42, 0.055);
+}
+
+:global(html[data-theme="light"]) .cardReference strong {
+    color: #875100;
+}
+
+:global(html[data-theme="light"]) .cardReference small {
+    color: #64748b;
+}
+
+:global(html[data-theme="light"]) .versionBadge {
+    color: #925700;
+}
+
+:global(html[data-theme="light"]) .verseText {
+    color: #172033;
+}
+
+:global(html[data-theme="light"]) .noteBox {
+    border-color:
+        rgba(181, 120, 15, 0.26);
+
+    background:
+        radial-gradient(500px 180px at 0% 0%,
+            rgba(245, 158, 11, 0.07),
+            transparent 60%),
+        #fffaf1;
+}
+
+:global(html[data-theme="light"]) .noteHeader strong {
+    color: #8c5200;
+}
+
+:global(html[data-theme="light"]) .noteText {
+    color: #3a2c19;
+}
+
+:global(html[data-theme="light"]) .cardFooter {
+    border-top-color:
+        rgba(51, 65, 85, 0.1);
+
+    span {
+        color: #6b778b;
+    }
+
+    strong {
+        color: #8a5200;
+    }
+}
+
+:global(html[data-theme="light"]) .empty {
+    border-color:
+        rgba(51, 65, 85, 0.15);
+
+    background:
+        rgba(255, 255, 255, 0.5);
+}
+
+:global(html[data-theme="light"]) .empty strong {
+    color: #172033;
+}
+
+:global(html[data-theme="light"]) .empty p {
+    color: #64748b;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+    .pageHeading {
+        grid-template-columns:
+            auto minmax(0, 1fr);
+    }
+
+    .headingStats {
+        grid-column: 1 / -1;
+
+        width: 100%;
+    }
+}
+
+/* =========================================================
+   CELULAR
+========================================================= */
+
+@media (max-width: 760px) {
+    .container {
+        padding:
+            18px 14px 42px;
+    }
+
+    .pageHeading {
+        min-height: auto;
+
+        padding: 20px;
+
+        grid-template-columns: 1fr;
+
+        gap: 14px;
+    }
+
+    .headingIcon {
+        width: 50px;
+        height: 50px;
+
+        font-size: 21px;
+    }
+
+    .title {
+        padding-right: 70px;
+
+        font-size: 30px;
+    }
+
+    .notesBadge {
+        right: 14px;
+        top: 14px;
+
+        min-height: 31px;
+
+        padding: 0 10px;
+
+        font-size: 9px;
+    }
+
+    .headingStats {
+        grid-column: auto;
+    }
+
+    .sectionTitle {
+        font-size: 19px;
+    }
+
+    .card {
+        padding: 16px;
+    }
+
+    .cardTop {
+        flex-direction: column;
+    }
+
+    .versionBadge {
+        align-self: flex-start;
+    }
+
+    .cardFooter {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+}
+
+/* =========================================================
+   CELULAR PEQUENO
+========================================================= */
+
+@media (max-width: 430px) {
+    .headingIcon {
+        display: none;
+    }
+
+    .title {
+        font-size: 27px;
+    }
+
+    .empty {
+        align-items: flex-start;
+    }
+}

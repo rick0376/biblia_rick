@@ -1,149 +1,293 @@
 // app/livros/page.tsx
 
 import Link from "next/link";
+
 import { prisma } from "../../lib/prisma";
-import styles from "./styles.module.scss";
-import LivrosClient from "../components/LivrosClient";
 import { requireBibleAuth } from "../../lib/auth/server";
+
+import LivrosClient from "../components/LivrosClient";
+
+import styles from "./styles.module.scss";
 
 type Version = "acf" | "ara" | "nvi" | "kja";
 
 function normalizeVersion(v?: string): Version {
-  const s = (v ?? "").toLowerCase();
+  const value = (v ?? "").toLowerCase();
 
   if (
-    s === "acf" ||
-    s === "ara" ||
-    s === "nvi" ||
-    s === "kja"
+    value === "acf" ||
+    value === "ara" ||
+    value === "nvi" ||
+    value === "kja"
   ) {
-    return s;
+    return value;
   }
 
   return "acf";
 }
 
+function normalizeTestament(
+  testament: string,
+): "OLD" | "NEW" | null {
+  const value = String(testament)
+    .trim()
+    .toUpperCase();
+
+  if (
+    value === "OLD" ||
+    value === "OT" ||
+    value === "AT" ||
+    value === "ANTIGO" ||
+    value === "OLD_TESTAMENT"
+  ) {
+    return "OLD";
+  }
+
+  if (
+    value === "NEW" ||
+    value === "NT" ||
+    value === "NOVO" ||
+    value === "NEW_TESTAMENT"
+  ) {
+    return "NEW";
+  }
+
+  return null;
+}
+
 export default async function Livros({
   searchParams,
 }: {
-  searchParams?: Promise<{ v?: string }>;
+  searchParams?: Promise<{
+    v?: string;
+  }>;
 }) {
-  const auth = await requireBibleAuth();
+  const auth =
+    await requireBibleAuth();
 
-  const { v } = (await searchParams) ?? {};
-  const version = normalizeVersion(v);
+  const { v } =
+    (await searchParams) ?? {};
 
-  const translation = await prisma.translation.findUnique({
-    where: { code: version },
-    select: { id: true },
-  });
+  const version =
+    normalizeVersion(v);
+
+  const translation =
+    await prisma.translation.findUnique({
+      where: {
+        code: version,
+      },
+
+      select: {
+        id: true,
+      },
+    });
 
   if (!translation) {
     return (
       <main className={styles.container}>
         <div className={styles.topArea}>
-          <Link href="/" className={styles.backLink}>
-            <span className={styles.backIcon}>←</span>
-            <span className={styles.backText}>Voltar</span>
-          </Link>
+          <div className={styles.topBar}>
+            <Link
+              href="/"
+              className={styles.backLink}
+            >
+              <span
+                className={styles.backIcon}
+              >
+                ←
+              </span>
 
-          <div className={styles.pageHeading}>
-            <div className={styles.headingIcon}>📖</div>
+              <span
+                className={styles.backText}
+              >
+                Voltar
+              </span>
+            </Link>
+          </div>
 
-            <div>
-              <span className={styles.eyebrow}>
+          <section
+            className={
+              styles.pageHeading
+            }
+          >
+            <div
+              className={
+                styles.headingIcon
+              }
+            >
+              📖
+            </div>
+
+            <div
+              className={
+                styles.headingContent
+              }
+            >
+              <span
+                className={styles.eyebrow}
+              >
                 Biblioteca Bíblica
               </span>
 
-              <h1 className={styles.title}>
+              <h1
+                className={styles.title}
+              >
                 Livros da Bíblia
               </h1>
 
-              <p className={styles.subtitle}>
-                Tradução{" "}
-                <strong>{version.toUpperCase()}</strong>{" "}
-                ainda não foi importada no banco.
+              <p
+                className={
+                  styles.subtitle
+                }
+              >
+                A tradução{" "}
+                <strong>
+                  {version.toUpperCase()}
+                </strong>{" "}
+                ainda não foi importada
+                no banco de dados.
               </p>
             </div>
-          </div>
+
+            <div
+              className={
+                styles.versionBadge
+              }
+            >
+              <span>📖</span>
+
+              <strong>
+                {version.toUpperCase()}
+              </strong>
+            </div>
+          </section>
         </div>
       </main>
     );
   }
 
-  const livros = await prisma.book.findMany({
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      testament: true,
+  const livros =
+    await prisma.book.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        testament: true,
 
-      _count: {
-        select: {
-          chapters: {
-            where: {
-              verses: {
-                some: {
-                  translationId: translation.id,
-                },
-              },
-            },
-          },
-        },
-      },
-
-      chapters: {
-        where: {
-          verses: {
-            some: {
-              translationId: translation.id,
-
-              notes: {
-                some: {
-                  userId: auth.user.id,
+        _count: {
+          select: {
+            chapters: {
+              where: {
+                verses: {
+                  some: {
+                    translationId:
+                      translation.id,
+                  },
                 },
               },
             },
           },
         },
 
-        select: {
-          id: true,
+        chapters: {
+          where: {
+            verses: {
+              some: {
+                translationId:
+                  translation.id,
+
+                notes: {
+                  some: {
+                    userId:
+                      auth.user.id,
+                  },
+                },
+              },
+            },
+          },
+
+          select: {
+            id: true,
+          },
+
+          take: 1,
         },
-
-        take: 1,
       },
-    },
 
-    orderBy: {
-      order: "asc",
-    },
-  });
+      orderBy: {
+        order: "asc",
+      },
+    });
 
-  const livrosFormatados = livros.map((l) => ({
-    id: l.id,
-    name: l.name,
-    slug: l.slug,
-    testament: l.testament,
-    chaptersCount: l._count.chapters,
-    hasNotes: l.chapters.length > 0,
-  }));
+  const livrosFormatados =
+    livros.map((livro) => ({
+      id: livro.id,
+      name: livro.name,
+      slug: livro.slug,
+      testament: livro.testament,
+
+      chaptersCount:
+        livro._count.chapters,
+
+      hasNotes:
+        livro.chapters.length > 0,
+    }));
+
+  const antigoTestamento =
+    livrosFormatados.filter(
+      (livro) =>
+        normalizeTestament(
+          String(livro.testament),
+        ) === "OLD",
+    ).length;
+
+  const novoTestamento =
+    livrosFormatados.filter(
+      (livro) =>
+        normalizeTestament(
+          String(livro.testament),
+        ) === "NEW",
+    ).length;
 
   return (
     <main className={styles.container}>
       <div className={styles.topArea}>
-        <Link href="/" className={styles.backLink}>
-          <span className={styles.backIcon}>←</span>
-          <span className={styles.backText}>Voltar</span>
-        </Link>
+        <div className={styles.topBar}>
+          <Link
+            href="/"
+            className={styles.backLink}
+          >
+            <span
+              className={styles.backIcon}
+            >
+              ←
+            </span>
 
-        <div className={styles.pageHeading}>
-          <div className={styles.headingIcon}>
+            <span
+              className={styles.backText}
+            >
+              Voltar
+            </span>
+          </Link>
+        </div>
+
+        <section
+          className={styles.pageHeading}
+        >
+          <div
+            className={styles.headingIcon}
+          >
             📖
           </div>
 
-          <div>
-            <span className={styles.eyebrow}>
+          <div
+            className={
+              styles.headingContent
+            }
+          >
+            <span
+              className={styles.eyebrow}
+            >
               Biblioteca Bíblica
             </span>
 
@@ -151,17 +295,59 @@ export default async function Livros({
               Livros da Bíblia
             </h1>
 
-            <p className={styles.subtitle}>
-              Escolha um livro para iniciar sua leitura
-              • versão{" "}
-              <strong>{version.toUpperCase()}</strong>
+            <p
+              className={styles.subtitle}
+            >
+              Escolha um livro e continue
+              sua jornada pelas Escrituras
+              na versão{" "}
+              <strong>
+                {version.toUpperCase()}
+              </strong>
+              .
             </p>
           </div>
 
-          <div className={styles.versionBadge}>
-            📖 {version.toUpperCase()}
+          <div
+            className={styles.headingStats}
+          >
+            <div>
+              <strong>
+                {livrosFormatados.length}
+              </strong>
+
+              <span>Livros</span>
+            </div>
+
+            <div>
+              <strong>
+                {antigoTestamento}
+              </strong>
+
+              <span>Antigo</span>
+            </div>
+
+            <div>
+              <strong>
+                {novoTestamento}
+              </strong>
+
+              <span>Novo</span>
+            </div>
           </div>
-        </div>
+
+          <div
+            className={
+              styles.versionBadge
+            }
+          >
+            <span>📖</span>
+
+            <strong>
+              {version.toUpperCase()}
+            </strong>
+          </div>
+        </section>
       </div>
 
       <LivrosClient
