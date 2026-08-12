@@ -1,4 +1,4 @@
- // app/components/PergunteBiblia.tsx
+// app/components/PergunteBiblia.tsx
 
 "use client";
 
@@ -96,55 +96,82 @@ export default function PergunteBiblia({
   const [
     answer,
     setAnswer,
-  ] =
-    useState<string | null>(
-      null,
-    );
+  ] = useState<string | null>(
+    null,
+  );
 
   const [
     references,
     setReferences,
-  ] =
-    useState<Reference[]>([]);
+  ] = useState<Reference[]>(
+    [],
+  );
 
   const [
     citedReferences,
     setCitedReferences,
-  ] =
-    useState<CitedReference[]>(
-      [],
-    );
+  ] = useState<
+    CitedReference[]
+  >([]);
 
   const [
     loading,
     setLoading,
-  ] =
-    useState(false);
+  ] = useState(false);
 
   const [
     error,
     setError,
-  ] =
-    useState<string | null>(
-      null,
-    );
+  ] = useState<string | null>(
+    null,
+  );
 
   const [
     suggestions,
     setSuggestions,
-  ] =
-    useState<string[]>(
-      DEFAULT_SUGGESTIONS,
-    );
+  ] = useState<string[]>(
+    DEFAULT_SUGGESTIONS,
+  );
 
   const [
     searchLoaded,
     setSearchLoaded,
-  ] =
-    useState(false);
+  ] = useState(false);
 
   /* =======================================================
-     CARREGA SUGESTÕES SALVAS
+     SALVA PESQUISA
+  ======================================================= */
+
+  function saveSearch(
+    data: SavedSearch,
+  ) {
+    try {
+      localStorage.setItem(
+        getSearchStorageKey(
+          version,
+        ),
+        JSON.stringify(data),
+      );
+    } catch {
+      // ignora erro
+    }
+  }
+
+  /* =======================================================
+     SALVA O ESTADO ATUAL IMEDIATAMENTE
+  ======================================================= */
+
+  function persistCurrentSearch() {
+    saveSearch({
+      question,
+      answer,
+      references,
+      citedReferences,
+    });
+  }
+
+  /* =======================================================
+     CARREGA SUGESTÕES
   ======================================================= */
 
   useEffect(() => {
@@ -198,7 +225,7 @@ export default function PergunteBiblia({
   }, [suggestions]);
 
   /* =======================================================
-     CARREGA A ÚLTIMA PERGUNTA E RESPOSTA
+     CARREGA ÚLTIMA PERGUNTA E RESPOSTA
   ======================================================= */
 
   useEffect(() => {
@@ -271,7 +298,7 @@ export default function PergunteBiblia({
   }, [version]);
 
   /* =======================================================
-     SALVA PERGUNTA E RESPOSTA
+     MANTÉM ESTADO SALVO
   ======================================================= */
 
   useEffect(() => {
@@ -279,25 +306,12 @@ export default function PergunteBiblia({
       return;
     }
 
-    try {
-      const data: SavedSearch = {
-        question,
-        answer,
-        references,
-        citedReferences,
-      };
-
-      localStorage.setItem(
-        getSearchStorageKey(
-          version,
-        ),
-        JSON.stringify(
-          data,
-        ),
-      );
-    } catch {
-      // ignora erro
-    }
+    saveSearch({
+      question,
+      answer,
+      references,
+      citedReferences,
+    });
   }, [
     question,
     answer,
@@ -308,7 +322,7 @@ export default function PergunteBiblia({
   ]);
 
   /* =======================================================
-     LIMPAR SOMENTE A RESPOSTA
+     LIMPAR SOMENTE RESPOSTA
   ======================================================= */
 
   function clearResult() {
@@ -316,6 +330,13 @@ export default function PergunteBiblia({
     setReferences([]);
     setCitedReferences([]);
     setError(null);
+
+    saveSearch({
+      question,
+      answer: null,
+      references: [],
+      citedReferences: [],
+    });
   }
 
   /* =======================================================
@@ -366,15 +387,29 @@ export default function PergunteBiblia({
   function fillSuggestion(
     item: string,
   ) {
+    const newQuestion =
+      `O que a Bíblia ensina sobre ${item.toLowerCase()}?`;
+
     setQuestion(
-      `O que a Bíblia ensina sobre ${item.toLowerCase()}?`,
+      newQuestion,
     );
 
-    clearResult();
+    setAnswer(null);
+    setReferences([]);
+    setCitedReferences([]);
+    setError(null);
+
+    saveSearch({
+      question:
+        newQuestion,
+      answer: null,
+      references: [],
+      citedReferences: [],
+    });
   }
 
   /* =======================================================
-     ENVIA A PERGUNTA
+     ENVIA PERGUNTA
   ======================================================= */
 
   async function submit(
@@ -398,11 +433,7 @@ export default function PergunteBiblia({
     }
 
     setLoading(true);
-
     setError(null);
-    setAnswer(null);
-    setReferences([]);
-    setCitedReferences([]);
 
     try {
       const response =
@@ -420,7 +451,6 @@ export default function PergunteBiblia({
               JSON.stringify({
                 question:
                   trimmed,
-
                 version,
               }),
           },
@@ -441,19 +471,54 @@ export default function PergunteBiblia({
         return;
       }
 
-      setAnswer(
+      const newAnswer =
         data.answer ||
-          null,
+        null;
+
+      const newReferences =
+        data.references ||
+        [];
+
+      const newCitedReferences =
+        data.citedReferences ||
+        [];
+
+      /* ===================================================
+         SALVA IMEDIATAMENTE A RESPOSTA DA GEMINI
+      =================================================== */
+
+      saveSearch({
+        question:
+          trimmed,
+
+        answer:
+          newAnswer,
+
+        references:
+          newReferences,
+
+        citedReferences:
+          newCitedReferences,
+      });
+
+      /* ===================================================
+         ATUALIZA A TELA
+      =================================================== */
+
+      setQuestion(
+        trimmed,
+      );
+
+      setAnswer(
+        newAnswer,
       );
 
       setReferences(
-        data.references ||
-          [],
+        newReferences,
       );
 
       setCitedReferences(
-        data.citedReferences ||
-          [],
+        newCitedReferences,
       );
     } catch {
       setError(
@@ -465,7 +530,7 @@ export default function PergunteBiblia({
   }
 
   /* =======================================================
-     TRANSFORMA REFERÊNCIAS DA RESPOSTA EM LINKS
+     REFERÊNCIAS CLICÁVEIS DENTRO DA RESPOSTA
   ======================================================= */
 
   function renderAnswer() {
@@ -542,6 +607,9 @@ export default function PergunteBiblia({
                 styles.inlineBibleLink
               }
               title={`Abrir ${citation.reference}`}
+              onClick={
+                persistCurrentSearch
+              }
             >
               {part}
             </Link>
@@ -628,7 +696,9 @@ export default function PergunteBiblia({
 
       <form
         onSubmit={submit}
-        className={styles.form}
+        className={
+          styles.form
+        }
       >
         <textarea
           className={
@@ -891,6 +961,10 @@ export default function PergunteBiblia({
                       className={
                         styles.citedReferenceLink
                       }
+                      title={`Abrir ${citation.reference}`}
+                      onClick={
+                        persistCurrentSearch
+                      }
                     >
                       📖{" "}
                       {
@@ -948,6 +1022,9 @@ export default function PergunteBiblia({
                           href={`/livros/${reference.slug}/${reference.chapter}?v=${version}#v-${reference.number}`}
                           className={
                             styles.readLink
+                          }
+                          onClick={
+                            persistCurrentSearch
                           }
                         >
                           Ler no
