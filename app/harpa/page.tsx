@@ -25,6 +25,16 @@ export default async function HarpaPage() {
           verses: true,
         },
       },
+
+      verses: {
+        orderBy: {
+          position: "asc",
+        },
+
+        select: {
+          text: true,
+        },
+      },
     },
 
     orderBy: {
@@ -38,7 +48,13 @@ export default async function HarpaPage() {
     (hino: HinoRow) => ({
       number: hino.number,
       title: hino.title,
-      versesCount: hino._count.verses,
+
+      versesCount:
+        hino._count.verses,
+
+      verses: hino.verses.map(
+        (verse) => verse.text,
+      ),
     }),
   );
 
@@ -74,8 +90,8 @@ export default async function HarpaPage() {
             </h1>
 
             <p className={styles.subtitle}>
-              Encontre um hino e acompanhe suas
-              estrofes e coros.
+              Encontre um hino pelo número,
+              título ou por um trecho da letra.
             </p>
           </div>
 

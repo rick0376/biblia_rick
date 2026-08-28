@@ -512,6 +512,451 @@
   font-size: 18px;
 }
 
+/* =========================================================
+   BOTÃO DE TEMA NA HOME
+========================================================= */
+
+.topActions :global(.themeToggle) {
+  width: auto;
+  min-width: 92px;
+  height: 38px;
+
+  padding: 0 12px;
+
+  flex-shrink: 0;
+
+  position: static;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  border-radius: 12px;
+
+  font-size: 12px;
+  font-weight: 850;
+
+  white-space: nowrap;
+
+  box-shadow: none;
+}
+
+/* =========================================================
+   TEMA CLARO - PÁGINA INICIAL
+========================================================= */
+
+:global(html[data-theme="light"]) .page {
+  background:
+    radial-gradient(900px 500px at 70% -10%,
+      rgba(245, 158, 11, 0.055),
+      transparent 65%),
+    linear-gradient(180deg,
+      #f7f9fc 0%,
+      #edf2f7 55%,
+      #e9eef5 100%);
+}
+
+/* =========================================================
+   ESTRUTURA PRINCIPAL
+========================================================= */
+
+:global(html[data-theme="light"]) .shell {
+  border-color:
+    rgba(51, 65, 85, 0.14);
+
+  background:
+    rgba(255, 255, 255, 0.92);
+
+  box-shadow:
+    0 28px 70px rgba(15, 23, 42, 0.1);
+}
+
+:global(html[data-theme="light"]) .content {
+  background:
+    linear-gradient(180deg,
+      #f8fafc,
+      #edf2f7);
+}
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+:global(html[data-theme="light"]) .sidebar {
+  border-right-color:
+    rgba(51, 65, 85, 0.12);
+
+  background:
+    radial-gradient(360px 240px at 0% 0%,
+      rgba(245, 158, 11, 0.07),
+      transparent 65%),
+    linear-gradient(180deg,
+      #ffffff,
+      #f4f7fa);
+}
+
+:global(html[data-theme="light"]) .brand {
+  color: #182235;
+}
+
+:global(html[data-theme="light"]) .brandIcon {
+  border-color:
+    rgba(181, 120, 15, 0.24);
+
+  background:
+    rgba(245, 158, 11, 0.1);
+
+  box-shadow:
+    0 8px 20px rgba(154, 91, 0, 0.07);
+}
+
+:global(html[data-theme="light"]) .brand small {
+  color: #945800;
+
+  background:
+    rgba(245, 158, 11, 0.11);
+}
+
+/* MENU */
+
+:global(html[data-theme="light"]) .navItem {
+  color: #536176;
+}
+
+:global(html[data-theme="light"]) .navItem:hover {
+  color: #805000;
+
+  background:
+    rgba(245, 158, 11, 0.07);
+}
+
+:global(html[data-theme="light"]) .navActive {
+  color: #8d5500;
+
+  background:
+    linear-gradient(90deg,
+      rgba(245, 158, 11, 0.13),
+      rgba(245, 158, 11, 0.025));
+
+  border-left-color: #d98b0b;
+}
+
+/* RODAPÉ DA SIDEBAR */
+
+:global(html[data-theme="light"]) .sidebarBottom {
+  border-top-color:
+    rgba(51, 65, 85, 0.11);
+}
+
+:global(html[data-theme="light"]) .miniLabel {
+  color: #955900;
+}
+
+:global(html[data-theme="light"]) .sidebarVerse {
+  color: #56657a;
+}
+
+:global(html[data-theme="light"]) .sidebarRef {
+  color: #8f5500;
+}
+
+/* =========================================================
+   TOPBAR
+========================================================= */
+
+:global(html[data-theme="light"]) .topbar {
+  border-bottom-color:
+    rgba(51, 65, 85, 0.12);
+
+  background:
+    rgba(255, 255, 255, 0.82);
+
+  box-shadow:
+    0 4px 18px rgba(15, 23, 42, 0.035);
+}
+
+:global(html[data-theme="light"]) .mobileBrand {
+  color: #172033;
+}
+
+:global(html[data-theme="light"]) .versionMenu {
+  border-color:
+    rgba(51, 65, 85, 0.13);
+
+  background: #f5f7fa;
+}
+
+:global(html[data-theme="light"]) .versionMenu span {
+  color: #67758a;
+}
+
+:global(html[data-theme="light"]) .versionMenu a {
+  color: #526176;
+}
+
+:global(html[data-theme="light"]) .versionMenu a:hover {
+  color: #895100;
+
+  background:
+    rgba(245, 158, 11, 0.07);
+}
+
+:global(html[data-theme="light"]) .versionMenu a[aria-current="page"] {
+  color: #2a1b00;
+
+  background:
+    linear-gradient(135deg,
+      #ffe18a,
+      #f3b43e);
+}
+
+:global(html[data-theme="light"]) .userChip {
+  color: #273449;
+
+  border-color:
+    rgba(51, 65, 85, 0.13);
+
+  background:
+    #f5f7fa;
+}
+
+/* =========================================================
+   HERO
+========================================================= */
+
+:global(html[data-theme="light"]) .hero {
+  border-color:
+    rgba(51, 65, 85, 0.12);
+
+  background:
+    linear-gradient(90deg,
+      rgba(255, 255, 255, 0.97) 0%,
+      rgba(249, 250, 251, 0.94) 48%,
+      rgba(255, 247, 230, 0.9) 100%),
+    radial-gradient(560px 260px at 84% 16%,
+      rgba(245, 158, 11, 0.13),
+      transparent 63%);
+
+  box-shadow:
+    0 15px 36px rgba(15, 23, 42, 0.065);
+}
+
+:global(html[data-theme="light"]) .hero::before {
+  background:
+    linear-gradient(145deg,
+      transparent 38%,
+      rgba(180, 119, 20, 0.07) 39% 60%,
+      transparent 61%);
+}
+
+:global(html[data-theme="light"]) .hero::after {
+  background:
+    radial-gradient(circle,
+      rgba(213, 145, 25, 0.4) 0 3%,
+      rgba(245, 158, 11, 0.1) 6%,
+      transparent 65%);
+}
+
+:global(html[data-theme="light"]) .heroGlow {
+  background:
+    linear-gradient(180deg,
+      transparent 50%,
+      rgba(255, 255, 255, 0.38));
+}
+
+:global(html[data-theme="light"]) .heroEyebrow {
+  color: #925600;
+}
+
+:global(html[data-theme="light"]) .hero h1 {
+  color: #172033;
+}
+
+:global(html[data-theme="light"]) .hero p {
+  color: #526176;
+}
+
+/* =========================================================
+   ESTATÍSTICAS
+========================================================= */
+
+:global(html[data-theme="light"]) .statCard {
+  border-color:
+    rgba(51, 65, 85, 0.12);
+
+  background:
+    rgba(255, 255, 255, 0.86);
+
+  box-shadow:
+    0 7px 19px rgba(15, 23, 42, 0.05);
+}
+
+:global(html[data-theme="light"]) .statCard strong {
+  color: #172033;
+}
+
+:global(html[data-theme="light"]) .statCard small {
+  color: #66758a;
+}
+
+:global(html[data-theme="light"]) .statIcon {
+  color: #ac6900;
+}
+
+/* =========================================================
+   ACESSO RÁPIDO
+========================================================= */
+
+:global(html[data-theme="light"]) .quickSection {
+  border-color:
+    rgba(51, 65, 85, 0.12);
+
+  background:
+    rgba(255, 255, 255, 0.76);
+
+  box-shadow:
+    0 9px 25px rgba(15, 23, 42, 0.045);
+}
+
+:global(html[data-theme="light"]) .sectionTitle {
+  color: #945800;
+}
+
+:global(html[data-theme="light"]) .sectionTitle span {
+  color: #172033;
+}
+
+:global(html[data-theme="light"]) .quickCard {
+  border-color:
+    rgba(51, 65, 85, 0.12);
+
+  color: #172033;
+
+  box-shadow:
+    0 6px 18px rgba(15, 23, 42, 0.035);
+}
+
+:global(html[data-theme="light"]) .quickCard:hover {
+  border-color:
+    rgba(181, 120, 15, 0.28);
+
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+:global(html[data-theme="light"]) .quickCard strong {
+  color: #845000;
+}
+
+:global(html[data-theme="light"]) .quickCard small {
+  color: #64748b;
+}
+
+:global(html[data-theme="light"]) .quickBible {
+  background:
+    linear-gradient(135deg,
+      rgba(245, 158, 11, 0.12),
+      #ffffff);
+}
+
+:global(html[data-theme="light"]) .quickHarpa {
+  background:
+    linear-gradient(135deg,
+      rgba(37, 99, 235, 0.08),
+      #ffffff);
+}
+
+:global(html[data-theme="light"]) .quickFavorites {
+  background:
+    linear-gradient(135deg,
+      rgba(22, 163, 74, 0.07),
+      #ffffff);
+}
+
+:global(html[data-theme="light"]) .quickNotes {
+  background:
+    linear-gradient(135deg,
+      rgba(180, 117, 20, 0.09),
+      #ffffff);
+}
+
+/* =========================================================
+   VERSÍCULO DO DIA
+========================================================= */
+
+:global(html[data-theme="light"]) .dailyVerse {
+  border-color:
+    rgba(181, 120, 15, 0.2);
+
+  background:
+    linear-gradient(90deg,
+      #ffffff,
+      #f6f8fb 55%,
+      #fff5e2);
+
+  box-shadow:
+    0 10px 28px rgba(15, 23, 42, 0.05);
+}
+
+:global(html[data-theme="light"]) .dailyContent blockquote {
+  color: #283449;
+}
+
+:global(html[data-theme="light"]) .dailyContent>strong {
+  color: #8e5400;
+}
+
+:global(html[data-theme="light"]) .bibleArt {
+  background:
+    radial-gradient(circle at 50% 65%,
+      rgba(245, 158, 11, 0.14),
+      transparent 55%);
+}
+
+:global(html[data-theme="light"]) .bibleArt::before {
+  background:
+    rgba(166, 107, 17, 0.07);
+}
+
+:global(html[data-theme="light"]) .bookGlow {
+  background:
+    rgba(240, 164, 35, 0.18);
+}
+
+:global(html[data-theme="light"]) .openBook {
+  filter:
+    drop-shadow(0 17px 18px rgba(15, 23, 42, 0.15));
+}
+
+/* =========================================================
+   RODAPÉ
+========================================================= */
+
+:global(html[data-theme="light"]) .footer {
+  color: #69778b;
+}
+
+:global(html[data-theme="light"]) .apocalypseBtn {
+  border-color:
+    rgba(51, 65, 85, 0.13);
+
+  background: #ffffff;
+
+  color: #263349;
+
+  box-shadow:
+    0 6px 16px rgba(15, 23, 42, 0.04);
+}
+
+:global(html[data-theme="light"]) .apocalypseBtn:hover {
+  border-color:
+    rgba(181, 120, 15, 0.28);
+
+  background: #fffaf1;
+}
+
 @media (max-width: 1080px) {
   .shell {
     grid-template-columns: 185px minmax(0, 1fr);
@@ -647,6 +1092,23 @@
     width: 100%;
     justify-content: space-between;
   }
+
+  .topActions :global(.themeToggle) {
+    min-width: 38px;
+    width: 38px;
+    height: 36px;
+
+    padding: 0;
+
+    overflow: hidden;
+
+    font-size: 0;
+  }
+
+  .topActions :global(.themeToggle)::first-letter {
+    font-size: 15px;
+  }
+
 }
 
 @media (max-width: 460px) {

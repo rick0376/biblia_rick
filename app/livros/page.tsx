@@ -62,14 +62,11 @@ export default async function Livros({
     v?: string;
   }>;
 }) {
-  const auth =
-    await requireBibleAuth();
+  const auth = await requireBibleAuth();
 
-  const { v } =
-    (await searchParams) ?? {};
+  const { v } = (await searchParams) ?? {};
 
-  const version =
-    normalizeVersion(v);
+  const version = normalizeVersion(v);
 
   const translation =
     await prisma.translation.findUnique({
@@ -91,69 +88,41 @@ export default async function Livros({
               href="/"
               className={styles.backLink}
             >
-              <span
-                className={styles.backIcon}
-              >
+              <span className={styles.backIcon}>
                 ←
               </span>
 
-              <span
-                className={styles.backText}
-              >
+              <span className={styles.backText}>
                 Voltar
               </span>
             </Link>
           </div>
 
-          <section
-            className={
-              styles.pageHeading
-            }
-          >
-            <div
-              className={
-                styles.headingIcon
-              }
-            >
+          <section className={styles.pageHeading}>
+            <div className={styles.headingIcon}>
               📖
             </div>
 
-            <div
-              className={
-                styles.headingContent
-              }
-            >
-              <span
-                className={styles.eyebrow}
-              >
+            <div className={styles.headingContent}>
+              <span className={styles.eyebrow}>
                 Biblioteca Bíblica
               </span>
 
-              <h1
-                className={styles.title}
-              >
+              <h1 className={styles.title}>
                 Livros da Bíblia
               </h1>
 
-              <p
-                className={
-                  styles.subtitle
-                }
-              >
+              <p className={styles.subtitle}>
                 A tradução{" "}
                 <strong>
                   {version.toUpperCase()}
                 </strong>{" "}
-                ainda não foi importada
-                no banco de dados.
+                ainda não foi importada no banco
+                de dados.
               </p>
             </div>
 
-            <div
-              className={
-                styles.versionBadge
-              }
-            >
+            <div className={styles.versionBadge}>
               <span>📖</span>
 
               <strong>
@@ -166,61 +135,60 @@ export default async function Livros({
     );
   }
 
-  const livros =
-    await prisma.book.findMany({
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        testament: true,
+  const livros = await prisma.book.findMany({
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      testament: true,
 
-        _count: {
-          select: {
-            chapters: {
-              where: {
-                verses: {
-                  some: {
-                    translationId:
-                      translation.id,
-                  },
+      _count: {
+        select: {
+          chapters: {
+            where: {
+              verses: {
+                some: {
+                  translationId:
+                    translation.id,
+                },
+              },
+            },
+          },
+        },
+      },
+
+      chapters: {
+        where: {
+          verses: {
+            some: {
+              translationId:
+                translation.id,
+
+              notes: {
+                some: {
+                  userId:
+                    auth.user.id,
                 },
               },
             },
           },
         },
 
-        chapters: {
-          where: {
-            verses: {
-              some: {
-                translationId:
-                  translation.id,
-
-                notes: {
-                  some: {
-                    userId:
-                      auth.user.id,
-                  },
-                },
-              },
-            },
-          },
-
-          select: {
-            id: true,
-          },
-
-          take: 1,
+        select: {
+          id: true,
         },
-      },
 
-      orderBy: {
-        order: "asc",
+        take: 1,
       },
-    });
+    },
 
-  const livrosFormatados =
-    livros.map((livro) => ({
+    orderBy: {
+      order: "asc",
+    },
+  });
+
+  const livrosFormatados = livros.map(
+    (livro) => ({
       id: livro.id,
       name: livro.name,
       slug: livro.slug,
@@ -231,7 +199,8 @@ export default async function Livros({
 
       hasNotes:
         livro.chapters.length > 0,
-    }));
+    }),
+  );
 
   const antigoTestamento =
     livrosFormatados.filter(
@@ -257,37 +226,23 @@ export default async function Livros({
             href="/"
             className={styles.backLink}
           >
-            <span
-              className={styles.backIcon}
-            >
+            <span className={styles.backIcon}>
               ←
             </span>
 
-            <span
-              className={styles.backText}
-            >
+            <span className={styles.backText}>
               Voltar
             </span>
           </Link>
         </div>
 
-        <section
-          className={styles.pageHeading}
-        >
-          <div
-            className={styles.headingIcon}
-          >
+        <section className={styles.pageHeading}>
+          <div className={styles.headingIcon}>
             📖
           </div>
 
-          <div
-            className={
-              styles.headingContent
-            }
-          >
-            <span
-              className={styles.eyebrow}
-            >
+          <div className={styles.headingContent}>
+            <span className={styles.eyebrow}>
               Biblioteca Bíblica
             </span>
 
@@ -295,9 +250,7 @@ export default async function Livros({
               Livros da Bíblia
             </h1>
 
-            <p
-              className={styles.subtitle}
-            >
+            <p className={styles.subtitle}>
               Escolha um livro e continue
               sua jornada pelas Escrituras
               na versão{" "}
@@ -308,9 +261,7 @@ export default async function Livros({
             </p>
           </div>
 
-          <div
-            className={styles.headingStats}
-          >
+          <div className={styles.headingStats}>
             <div>
               <strong>
                 {livrosFormatados.length}
@@ -336,11 +287,7 @@ export default async function Livros({
             </div>
           </div>
 
-          <div
-            className={
-              styles.versionBadge
-            }
-          >
+          <div className={styles.versionBadge}>
             <span>📖</span>
 
             <strong>

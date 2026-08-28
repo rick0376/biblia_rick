@@ -6,6 +6,7 @@ import styles from "./styles.module.scss";
 import PergunteBiblia from "./components/PergunteBiblia";
 import LogoutButton from "./components/LogoutButton";
 import { requireBibleAuth } from "../lib/auth/server";
+import ThemeToggle from "./components/ThemeToggle";
 
 type Version = "acf" | "ara" | "nvi" | "kja";
 
@@ -78,6 +79,7 @@ export default async function Home({
             <div className={styles.topActions}>
               <div className={styles.versionMenu}>
                 <span>Versão:</span>
+
                 {(["acf", "ara", "nvi", "kja"] as Version[]).map((item) => (
                   <Link
                     key={item}
@@ -88,7 +90,13 @@ export default async function Home({
                   </Link>
                 ))}
               </div>
-              <span className={styles.userChip}>👤 Olá, {auth.user.name}</span>
+
+              <ThemeToggle />
+
+              <span className={styles.userChip}>
+                👤 Olá, {auth.user.name}
+              </span>
+
               <LogoutButton />
             </div>
           </header>
