@@ -51,7 +51,7 @@ export default function CapitulosClient({
         {filtrados.map((c) => (
           <Link
             key={c.id}
-            href={`/livros/${slug}/${c.number}?v=${version}#v-${c.number}`}
+            href={`/livros/${slug}/${c.number}?v=${version}`}
             className={styles.card}
           >
             <div
