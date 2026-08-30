@@ -3,15 +3,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 type Theme = "dark" | "light";
 
 export default function ThemeToggle() {
+  const pathname = usePathname();
+
   const [theme, setTheme] =
     useState<Theme>("dark");
 
   const [mounted, setMounted] =
     useState(false);
+
+  const isLogin =
+    pathname === "/login" ||
+    pathname.startsWith("/login/");
 
   /* =======================================================
      CARREGA O TEMA SALVO
@@ -27,37 +34,61 @@ export default function ThemeToggle() {
         : "dark";
 
     setTheme(initialTheme);
-
-    document.documentElement.dataset.theme =
-      initialTheme;
-
     setMounted(true);
   }, []);
+
+  /* =======================================================
+     APLICA O TEMA
+  ======================================================= */
+
+  useEffect(() => {
+    if (!mounted) {
+      return;
+    }
+
+    /*
+     * Login fica sempre no tema escuro,
+     * mas não apaga a preferência salva.
+     */
+    if (isLogin) {
+      document.documentElement.dataset.theme =
+        "dark";
+
+      return;
+    }
+
+    document.documentElement.dataset.theme =
+      theme;
+
+    localStorage.setItem(
+      "theme",
+      theme,
+    );
+  }, [theme, mounted, isLogin]);
 
   /* =======================================================
      ALTERA O TEMA
   ======================================================= */
 
   function toggleTheme() {
-    const newTheme: Theme =
-      theme === "dark"
+    setTheme((current) =>
+      current === "dark"
         ? "light"
-        : "dark";
-
-    setTheme(newTheme);
-
-    document.documentElement.dataset.theme =
-      newTheme;
-
-    localStorage.setItem(
-      "theme",
-      newTheme,
+        : "dark",
     );
   }
 
-  if (!mounted) {
+  /* =======================================================
+     NÃO MOSTRA NO LOGIN
+  ======================================================= */
+
+  if (!mounted || isLogin) {
     return null;
   }
+
+  /* =======================================================
+     BOTÃO
+  ======================================================= */
 
   return (
     <button
